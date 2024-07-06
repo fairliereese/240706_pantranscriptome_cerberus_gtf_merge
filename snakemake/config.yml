@@ -1,0 +1,31 @@
+ref:
+  gtf: /gpfs/projects/bsc83/data/gene_annotations/gencode/v47/gencode.v47.primary_assembly.annotation.gtf
+  gtf_ver: 47
+
+  cerberus:
+      ics: ref/cerberus/ics.tsv
+      ends: ref/cerberus/{end_mode}.bed
+meta:
+  sample: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/00_metadata/pantranscriptome_samples_metadata.tsv
+  library: snakemake/iq_masked_genomic_config.tsv
+
+params:
+  cerberus:
+    tss:
+      extend: 25
+      slack: 0
+    tes:
+      extend: 10
+      slack: 0
+
+# isoquant
+iq:
+  gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/04_transcriptome_assembly/02_isoquant/data/masked_genomic/{lab_rep}/{lab_rep}.transcript_models.gtf
+
+cerberus:
+  ics: data/cerb/{tech_rep}_ics.tsv
+  ends: data/cerb/{tech_rep}_{end_mode}.bed
+  agg:
+      ic_cfg: data/cerb/agg/agg_ic_cfg.csv
+      ics: data/cerb/agg/agg_ics.tsv
+      ends: data/cerb/agg/agg_{end_mode}.bed
