@@ -81,3 +81,31 @@ rule agg_ends:
             --slack {params.slack} \
             -o {output.agg_ends}
         """
+
+rule write_ref:
+    resources:
+        nodes = 1,
+        threads = 1
+    conda:
+        'cerberus'
+    shell:
+        """
+        cerberus write_reference \
+            --tss {input.tss} \
+            --tes {input.tes} \
+            --ics {input.ics} \
+            -o {output.h5}
+        """
+
+rule annot_transcriptome:
+    resources:
+        threads = 1,
+        nodes = 2
+    shell:
+        """
+        cerberus annotate_transcriptome \
+            --gtf {input.gtf} \
+            --h5 {input.h5} \
+            --source {params.source} \
+            -o {output.h5}
+        """

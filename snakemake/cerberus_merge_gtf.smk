@@ -23,10 +23,13 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(config['cerberus']['agg']['ics']),
-        expand(config['cerberus']['agg']['ends'],
-               tech_rep=df.tech_rep.tolist(),
-               end_mode=end_modes)
+        expand(config['cerberus']['ref']['annot_h5'],
+               tech_rep=df.tech_rep.tolist())
+        # config['cerberus']['ref']['h5']
+        # expand(config['cerberus']['agg']['ics']),
+        # expand(config['cerberus']['agg']['ends'],
+        #        tech_rep=df.tech_rep.tolist(),
+        #        end_mode=end_modes)
 
 def get_df_val(df, col, col2_val, col2='sample'):
     temp = df.loc[df[col2]==col2_val]
@@ -114,6 +117,24 @@ use rule agg_ends as cerb_agg_ends with:
     output:
         agg_ends = config['cerberus']['agg']['ends']
 
+use rule write_ref as cerb_write_ref with:
+    input:
+        tss = expand(rules.cerb_agg_ends.output.agg_ends,
+                     end_mode='tss'),
+        tes = expand(rules.cerb_agg_ends.output.agg_ends,
+                     end_mode='tes'),
+        ics = rules.cerb_agg_ic.output.tsv
+    output:
+        h5 = config['cerberus']['ref']['h5']
+
+rule use rule annot_transcriptome as cerb_annot_sample with:
+    input:
+        gtf = rules.cerb_gtf_to_ic.input.gtf,
+        h5 = rules.cerb_write_ref.output.h5
+    params:
+        source = lambda wc: wc.tech_rep
+    output:
+        h5 = config['cerberus']['ref']['annot_h5']
 
 # use rule agg_ends_cfg as cerb_agg_tss_config with:
 #     input:

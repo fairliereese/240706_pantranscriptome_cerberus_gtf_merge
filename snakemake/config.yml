@@ -8,7 +8,8 @@ ref:
 meta:
   sample: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/00_metadata/pantranscriptome_samples_metadata.tsv
   # library: snakemake/iq_masked_genomic_config.tsv
-  library: snakemake/config.tsv
+  # library: snakemake/config.tsv
+  library: snakemake/config_espresso_pseudomasked_genomic_expression.tsv
 
 params:
   cerberus:
@@ -23,7 +24,9 @@ params:
 
 # isoquant
 iq:
-  gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/04_transcriptome_assembly/02_isoquant/data/unmasked_genomic_guided/{lab_rep}/{lab_rep}.transcript_models.gtf
+  # gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/04_transcriptome_assembly/02_isoquant/data/unmasked_genomic_guided/{lab_rep}/{lab_rep}.transcript_models.gtf
+  gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/pseudomasked_genomic_espresso/{lab_rep}.gtf
+
 
 cerberus:
   ics: data/cerb/{tech_rep}_ics.tsv
@@ -31,6 +34,8 @@ cerberus:
   agg:
       ics_cfg: data/cerb/agg/agg_ic_cfg.csv
       ics: data/cerb/agg/agg_ics.tsv
-
       ends_cfg: data/cerb/agg/agg_{end_mode}_cfg.csv
       ends: data/cerb/agg/agg_{end_mode}.bed
+  ref:
+      h5: data/cerb/ref/ref.h5
+      annot_h5: data/cerb/ref/{tech_rep}.h5
