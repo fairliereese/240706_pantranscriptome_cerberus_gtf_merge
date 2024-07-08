@@ -60,10 +60,11 @@ rule agg_ends_cfg:
         nodes = 1
     run:
         temp = pd.DataFrame()
-        temp['fname'] = list(input.ref_ends)+list(input.sample_ends)
-        temp['source'] = [params.ref_source]+params.sample_sources
-        temp['add_ends'] = params.add_ends
+        temp['fname'] = list([input.ref_ends])+list(input.sample_ends)
         temp['ref'] = params.refs
+        temp['add_ends'] = params.add_ends
+        temp['source'] = [params.ref_source]+params.sample_sources
+        temp = temp[['fname', 'ref', 'add_ends', 'source']]
         temp.to_csv(output.cfg, header=None, index=None)
 
 rule agg_ends:

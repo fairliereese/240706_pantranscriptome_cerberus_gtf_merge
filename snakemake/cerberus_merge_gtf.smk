@@ -23,8 +23,8 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(config['cerberus']['agg']['ics_cfg']),
-        expand(config['cerberus']['agg']['ends_cfg'],
+        expand(config['cerberus']['agg']['ics']),
+        expand(config['cerberus']['agg']['ends'],
                tech_rep=df.tech_rep.tolist(),
                end_mode=end_modes)
 
@@ -75,7 +75,9 @@ use rule agg_ics_cfg as cerb_agg_ics_cfg with:
 
 use rule agg_ics as cerb_agg_ic with:
     input:
-        cfg = rules.cerb_agg_ics_cfg.output.cfg
+        cfg = rules.cerb_agg_ics_cfg.output.cfg,
+        sample_tsvs = rules.cerb_agg_ics_cfg.input.tsvs,
+        ref_tsv = rules.cerb_agg_ics_cfg.input.ref_tsv
     output:
         tsv = config['cerberus']['agg']['ics']
 
@@ -88,52 +90,79 @@ use rule gtf_to_ends as cerb_gtf_to_ends with:
     output:
         bed = config['cerberus']['ends']
 
-use rule agg_ends_cfg as cerb_agg_tss_config with:
+use rule agg_ends_cfg as cerb_agg_config with:
     input:
-        ref_ends = lambda wc: expand(rules.ref_gtf_to_ends.output.bed,
-                    end_mode='tss'),
+        ref_ends = rules.ref_gtf_to_ends.output.bed,
         sample_ends = lambda wc: expand(rules.cerb_gtf_to_ends.output.bed,
                     tech_rep=df.tech_rep.tolist(),
-                    end_mode='tss')
+                    end_mode=wc.end_mode)
     params:
         add_ends = [True]+[True for i in range(len(df.tech_rep.tolist()))],
         refs = [True]+[False for i in range(len(df.tech_rep.tolist()))],
         ref_source = config['ref']['gtf_ver'],
         sample_sources = df.tech_rep.tolist()
     output:
-        cfg = expand(config['cerberus']['agg']['ends_cfg'],
-                     end_mode='tss')[0]
+        cfg = config['cerberus']['agg']['ends_cfg']
 
-use rule agg_ends_cfg as cerb_agg_tes_config with:
+use rule agg_ends as cerb_agg_ends with:
     input:
-        ref_ends = lambda wc: expand(rules.ref_gtf_to_ends.output.bed,
-                    end_mode='tes'),
-        sample_ends = lambda wc: expand(rules.cerb_gtf_to_ends.output.bed,
-                    tech_rep=df.tech_rep.tolist(),
-                    end_mode='tes')
-    params:
-        add_ends = [True]+[True for i in range(len(df.tech_rep.tolist()))],
-        refs = [True]+[False for i in range(len(df.tech_rep.tolist()))],
-        ref_source = config['ref']['gtf_ver'],
-        sample_sources = df.tech_rep.tolist()
-    output:
-        cfg = expand(config['cerberus']['agg']['ends_cfg'],
-                     end_mode='tes')[0]
-
-use rule agg_ends as cerb_agg_tss with:
-    input:
-        ref_ends = rules.cerb_agg_tss_config.input.ref_ends,
-        sample_ends = rules.cerb_agg_tss_config.input.sample_ends
+        ref_ends = rules.cerb_agg_config.input.ref_ends,
+        sample_ends = rules.cerb_agg_config.input.sample_ends,
+        cfg = rules.cerb_agg_config.output.cfg
     params:
         slack = lambda wc: config['params']['cerberus'][wc.end_mode]['agg_slack']
     output:
-        cfg = config['cerberus']['agg']['ends_cfg']
+        agg_ends = config['cerberus']['agg']['ends']
 
-use rule agg_ends as cerb_agg_tes with:
-    input:
-        ref_ends = rules.cerb_agg_tes_config.input.ref_ends,
-        sample_ends = rules.cerb_agg_tes_config.input.sample_ends
-    params:
-        slack = lambda wc: config['params']['cerberus'][wc.end_mode]['agg_slack']
-    output:
-        cfg = config['cerberus']['agg']['ends_cfg']
+
+# use rule agg_ends_cfg as cerb_agg_tss_config with:
+#     input:
+#         ref_ends = lambda wc: expand(rules.ref_gtf_to_ends.output.bed,
+#                     end_mode='tss'),
+#         sample_ends = lambda wc: expand(rules.cerb_gtf_to_ends.output.bed,
+#                     tech_rep=df.tech_rep.tolist(),
+#                     end_mode='tss'),
+#     params:
+#         add_ends = [True]+[True for i in range(len(df.tech_rep.tolist()))],
+#         refs = [True]+[False for i in range(len(df.tech_rep.tolist()))],
+#         ref_source = config['ref']['gtf_ver'],
+#         sample_sources = df.tech_rep.tolist()
+#     output:
+#         cfg = expand(config['cerberus']['agg']['ends_cfg'],
+#                      end_mode='tss')[0]
+#
+# use rule agg_ends_cfg as cerb_agg_tes_config with:
+#     input:
+#         ref_ends = lambda wc: expand(rules.ref_gtf_to_ends.output.bed,
+#                     end_mode='tes'),
+#         sample_ends = lambda wc: expand(rules.cerb_gtf_to_ends.output.bed,
+#                     tech_rep=df.tech_rep.tolist(),
+#                     end_mode='tes')
+#     params:
+#         add_ends = [True]+[True for i in range(len(df.tech_rep.tolist()))],
+#         refs = [True]+[False for i in range(len(df.tech_rep.tolist()))],
+#         ref_source = config['ref']['gtf_ver'],
+#         sample_sources = df.tech_rep.tolist()
+#     output:
+#         cfg = expand(config['cerberus']['agg']['ends_cfg'],
+#                      end_mode='tes')[0]
+#
+# use rule agg_ends as cerb_agg_tss with:
+#     input:
+#         ref_ends = rules.cerb_agg_tss_config.input.ref_ends,
+#         sample_ends = rules.cerb_agg_tss_config.input.sample_ends,
+#         cfg = rules.cerb_agg_tss_config.output.cfg
+#     params:
+#         slack = lambda wc: config['params']['cerberus']['tss']['agg_slack']
+#     output:
+#         agg_ends = expand(config['cerberus']['agg']['ends'], end_mode='tss')[0]
+#
+# use rule agg_ends as cerb_agg_tes with:
+#     input:
+#         ref_ends = rules.cerb_agg_tes_config.input.ref_ends,
+#         sample_ends = rules.cerb_agg_tes_config.input.sample_ends,
+#         cfg = rules.cerb_agg_tes_config.output.cfg
+#     params:
+#         slack = config['params']['cerberus']['tes']['agg_slack']
+#     output:
+#         agg_ends = expand(config['cerberus']['agg']['ends'], end_mode='tes')[0]
