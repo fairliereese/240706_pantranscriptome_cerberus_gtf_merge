@@ -29,7 +29,8 @@ wildcard_constraints:
 
 rule all:
     input:
-        config['ref']['cerberus']['update']['gtf'],
+        expand(config['ref']['cerberus']['update']['gtf'],
+               analysis=analysis),
         expand(config['cerberus']['update']['gtf'],
                tech_rep=df.tech_rep.tolist(),
                analysis=analysis)
