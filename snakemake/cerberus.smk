@@ -101,6 +101,8 @@ rule annot_transcriptome:
     resources:
         threads = 1,
         nodes = 2
+    conda:
+        'cerberus'
     shell:
         """
         cerberus annotate_transcriptome \
@@ -108,4 +110,21 @@ rule annot_transcriptome:
             --h5 {input.h5} \
             --source {params.source} \
             -o {output.h5}
+        """
+
+rule update_gtf:
+    resources:
+        threads = 1,
+        nodes = 2
+    conda:
+        'cerberus'
+    shell:
+        """
+        cerberus replace_gtf_ids \
+            --h5 {input.h5} \
+            --gtf {input.gtf} \
+            --source {params.source} \
+            --update_ends \
+            --collapse \
+            -o {output.gtf}
         """

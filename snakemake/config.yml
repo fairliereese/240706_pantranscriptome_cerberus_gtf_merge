@@ -1,12 +1,17 @@
 ref:
-  gtf: /gpfs/projects/bsc83/Data/gene_annotations/gencode/v47/gencode.v47.primary_assembly.annotation.gtf
+  gtf: /gpfs/projects/bsc83/data/{analysis}/gene_annotations/gencode/v47/gencode.v47.primary_assembly.annotation.gtf
   gtf_ver: 47
 
   cerberus:
       ics: ref/cerberus/ics.tsv
       ends: ref/cerberus/{end_mode}.bed
+      ref:
+        annot_h5: ref/cerberus/ref/ref.h5
+      update:
+        gtf: ref/cerberus/update/ref.gtf
+
 meta:
-  sample: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/00_metadata/pantranscriptome_samples_metadata.tsv
+  sample: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/00_metadata/{analysis}/pantranscriptome_samples_metadata.tsv
   # library: snakemake/iq_masked_genomic_config.tsv
   # library: snakemake/config.tsv
   library: snakemake/config_espresso_pseudomasked_genomic_expression.tsv
@@ -24,18 +29,22 @@ params:
 
 # isoquant
 iq:
-  # gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/04_transcriptome_assembly/02_isoquant/data/unmasked_genomic_guided/{lab_rep}/{lab_rep}.transcript_models.gtf
+  gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/04_transcriptome_assembly/02_isoquant/data/{analysis}/unmasked_genomic_guided/{lab_rep}/{lab_rep}.transcript_models.gtf
+
+espresso_pseudomasked_genomic:
   gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/pseudomasked_genomic_espresso/{lab_rep}.gtf
 
 
 cerberus:
-  ics: data/cerb/{tech_rep}_ics.tsv
-  ends: data/cerb/{tech_rep}_{end_mode}.bed
+  ics: data/{analysis}/cerb/{tech_rep}_ics.tsv
+  ends: data/{analysis}/cerb/{tech_rep}_{end_mode}.bed
   agg:
-      ics_cfg: data/cerb/agg/agg_ic_cfg.csv
-      ics: data/cerb/agg/agg_ics.tsv
-      ends_cfg: data/cerb/agg/agg_{end_mode}_cfg.csv
-      ends: data/cerb/agg/agg_{end_mode}.bed
+      ics_cfg: data/{analysis}/cerb/agg/agg_ic_cfg.csv
+      ics: data/{analysis}/cerb/agg/agg_ics.tsv
+      ends_cfg: data/{analysis}/cerb/agg/agg_{end_mode}_cfg.csv
+      ends: data/{analysis}/cerb/agg/agg_{end_mode}.bed
   ref:
-      h5: data/cerb/ref/ref.h5
-      annot_h5: data/cerb/ref/{tech_rep}.h5
+      h5: data/{analysis}/cerb/ref/ref.h5
+      annot_h5: data/{analysis}/cerb/ref/{tech_rep}.h5
+  update:
+      gtf: data/{analysis}/cerb/update/{tech_rep}.gtf

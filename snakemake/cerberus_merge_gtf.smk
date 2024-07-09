@@ -10,10 +10,16 @@ from sm_utils import *
 include: 'cerberus.smk'
 
 configfile: 'snakemake/config.yml'
-config_tsv = config['meta']['library']
+# config_tsv = config['meta']['library']
+
+# settings for running  w/ different sets of data
+analysis = 'espresso_pseudomasked_genomic'
+df['analysis'] = analysis
+config_tsv = f'snakemake/config_{analysis}_expression.tsv'
+input_gtf = config[analysis]['gtf']
 
 df = parse_config(config_tsv)
-df['analysis'] = 'cerb_masked_genomic'
+
 
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
@@ -23,8 +29,11 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(config['cerberus']['ref']['annot_h5'],
-               tech_rep=df.tech_rep.tolist())
+        config['ref']['cerberus']['update']['gtf'],
+        expand(config['cerberus']['update']['gtf'],
+               tech_rep=df.tech_rep.tolist(),
+               analysis=analysis)
+
         # config['cerberus']['ref']['h5']
         # expand(config['cerberus']['agg']['ics']),
         # expand(config['cerberus']['agg']['ends'],
@@ -57,7 +66,7 @@ use rule gtf_to_ends as ref_gtf_to_ends with:
 
 use rule gtf_to_ic as cerb_gtf_to_ic with:
     input:
-        gtf = lambda wc: expand(config['iq']['gtf'],
+        gtf = lambda wc: expand(input_gtf,
                                 lab_rep=get_df_val(df,
                                          'lab_rep',
                                          wc.tech_rep,
@@ -69,6 +78,7 @@ use rule agg_ics_cfg as cerb_agg_ics_cfg with:
     input:
         ref_tsv = rules.ref_gtf_to_ic.output.tsv,
         tsvs = expand(rules.cerb_gtf_to_ic.output.tsv,
+                     analysis=analysis,
                      tech_rep=df.tech_rep.tolist())
     params:
         ref_source = config['ref']['gtf_ver'],
@@ -97,6 +107,7 @@ use rule agg_ends_cfg as cerb_agg_config with:
     input:
         ref_ends = rules.ref_gtf_to_ends.output.bed,
         sample_ends = lambda wc: expand(rules.cerb_gtf_to_ends.output.bed,
+                    analysis=wc.analysis,
                     tech_rep=df.tech_rep.tolist(),
                     end_mode=wc.end_mode)
     params:
@@ -120,14 +131,16 @@ use rule agg_ends as cerb_agg_ends with:
 use rule write_ref as cerb_write_ref with:
     input:
         tss = expand(rules.cerb_agg_ends.output.agg_ends,
+                     analysis=analysis,
                      end_mode='tss'),
         tes = expand(rules.cerb_agg_ends.output.agg_ends,
+                     analysis=analysis,
                      end_mode='tes'),
         ics = rules.cerb_agg_ic.output.tsv
     output:
         h5 = config['cerberus']['ref']['h5']
 
-rule use rule annot_transcriptome as cerb_annot_sample with:
+use rule annot_transcriptome as cerb_annot_sample with:
     input:
         gtf = rules.cerb_gtf_to_ic.input.gtf,
         h5 = rules.cerb_write_ref.output.h5
@@ -135,6 +148,35 @@ rule use rule annot_transcriptome as cerb_annot_sample with:
         source = lambda wc: wc.tech_rep
     output:
         h5 = config['cerberus']['ref']['annot_h5']
+
+use rule update_gtf as cerb_update_gtf_sample with:
+    input:
+        gtf = rules.cerb_annot_sample.input.gtf,
+        h5 = rules.cerb_annot_sample.output.h5
+    params:
+        source = lambda wc: wc.tech_rep
+    output:
+        gtf = config['cerberus']['update']['gtf']
+
+use rule annot_transcriptome as cerb_annot_ref with:
+    input:
+        gtf = rules.ref_gtf_to_ic.input.gtf,
+        h5 = rules.cerb_write_ref.output.h5
+    params:
+        source = config['ref']['gtf_ver']
+    output:
+        h5 = config['ref']['cerberus']['ref']['annot_h5']
+
+use rule update_gtf as cerb_update_gtf_ref with:
+    input:
+        gtf = rules.ref_gtf_to_ic.input.gtf,
+        h5 = rules.cerb_annot_ref.output.h5
+    params:
+        source = config['ref']['gtf_ver']
+    output:
+        gtf = config['ref']['cerberus']['update']['gtf']
+
+
 
 # use rule agg_ends_cfg as cerb_agg_tss_config with:
 #     input:
