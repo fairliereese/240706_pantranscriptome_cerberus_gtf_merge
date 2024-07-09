@@ -6,9 +6,9 @@ ref:
       ics: ref/cerberus/ics.tsv
       ends: ref/cerberus/{end_mode}.bed
       ref:
-        annot_h5: ref/cerberus/ref/ref.h5
+        annot_h5: ref/{analysis}/cerberus/ref/ref.h5
       update:
-        gtf: ref/cerberus/update/ref.gtf
+        gtf: ref/{analysis}/cerberus/update/ref.gtf
 
 meta:
   sample: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/00_metadata/{analysis}/pantranscriptome_samples_metadata.tsv
