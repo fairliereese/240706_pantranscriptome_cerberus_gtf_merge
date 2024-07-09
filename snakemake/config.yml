@@ -31,6 +31,9 @@ params:
 iq:
   gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/04_transcriptome_assembly/02_isoquant/data/{analysis}/unmasked_genomic_guided/{lab_rep}/{lab_rep}.transcript_models.gtf
 
+pseudomasked_genomic_isoquant_guided:
+  gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/pseudomasked_genomic_isoquant_guided/{lab_rep}.gtf
+
 espresso_pseudomasked_genomic:
   gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/pseudomasked_genomic_espresso/{lab_rep}.gtf
 

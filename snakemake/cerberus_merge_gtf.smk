@@ -13,12 +13,17 @@ configfile: 'snakemake/config.yml'
 # config_tsv = config['meta']['library']
 
 # settings for running  w/ different sets of data
-analysis = 'espresso_pseudomasked_genomic'
-config_tsv = f'snakemake/config_{analysis}_expression.tsv'
+# analysis = 'espresso_pseudomasked_genomic'
+# config_tsv = f'snakemake/config_{analysis}_expression.tsv'
+# df = parse_config(config_tsv)
+# df['analysis'] = analysis
+# input_gtf = config[analysis]['gtf']
+
+analysis = 'pseudomasked_genomic_isoquant_guided'
+config_tsv = f'snakemake/config_{analysis}.tsv'
 df = parse_config(config_tsv)
 df['analysis'] = analysis
 input_gtf = config[analysis]['gtf']
-
 
 
 wildcard_constraints:
