@@ -1,5 +1,5 @@
 ref:
-  gtf: /gpfs/projects/bsc83/data/{analysis}/gene_annotations/gencode/v47/gencode.v47.primary_assembly.annotation.gtf
+  gtf: /gpfs/projects/bsc83/Data/gene_annotations/gencode/v47/gencode.v47.primary_assembly.annotation.gtf
   gtf_ver: 47
 
   cerberus:
