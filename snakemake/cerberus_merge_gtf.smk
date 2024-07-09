@@ -14,11 +14,11 @@ configfile: 'snakemake/config.yml'
 
 # settings for running  w/ different sets of data
 analysis = 'espresso_pseudomasked_genomic'
-df['analysis'] = analysis
 config_tsv = f'snakemake/config_{analysis}_expression.tsv'
+df = parse_config(config_tsv)
+df['analysis'] = analysis
 input_gtf = config[analysis]['gtf']
 
-df = parse_config(config_tsv)
 
 
 wildcard_constraints:
