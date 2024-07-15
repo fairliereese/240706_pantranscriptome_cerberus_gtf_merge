@@ -1,6 +1,7 @@
 # Merge sample-level GTFs into one GTF
 
 import pandas as pd
+import cerberus
 
 p = os.getcwd()
 sys.path.append(p)
@@ -25,6 +26,7 @@ df = parse_config(config_tsv)
 df['analysis'] = analysis
 input_gtf = config[analysis]['gtf']
 
+df = df.loc[df.tech_rep == 'GM10493_1']
 
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
@@ -51,6 +53,28 @@ def get_df_val(df, col, col2_val, col2='sample'):
     assert len(temp.index) == 1
     return temp[col].values[0]
 
+# format the gtf corrrectly first
+rule fmt_iq_gtf:
+    input:
+        gtf = lambda wc: expand(input_gtf,
+                                lab_rep=get_df_val(df,
+                                'lab_rep',
+                                wc.tech_rep,
+                                'tech_rep'))
+    resources:
+        threads = 1,
+        nodes = 1
+    output:
+        gtf = config['fmt_gtf']
+    conda:
+        'cerberus'
+    shell:
+        """
+        python refmt_gtf.py {input.gtf} {output.gtf}
+        """
+
+
+
 # actual rule calls
 use rule gtf_to_ic as ref_gtf_to_ic with:
     input:
@@ -72,11 +96,12 @@ use rule gtf_to_ends as ref_gtf_to_ends with:
 
 use rule gtf_to_ic as cerb_gtf_to_ic with:
     input:
-        gtf = lambda wc: expand(input_gtf,
-                                lab_rep=get_df_val(df,
-                                         'lab_rep',
-                                         wc.tech_rep,
-                                         'tech_rep'))
+        gtf = rules.fmt_iq_gtf.output.gtf
+        # gtf = lambda wc: expand(input_gtf,
+        #                         lab_rep=get_df_val(df,
+        #                                  'lab_rep',
+        #                                  wc.tech_rep,
+        #                                  'tech_rep'))
     output:
         tsv = config['cerberus']['ics']
 

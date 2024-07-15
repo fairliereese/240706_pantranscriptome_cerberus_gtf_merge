@@ -11,10 +11,12 @@ ref:
         gtf: ref/{analysis}/cerberus/update/ref.gtf
 
 meta:
-  sample: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/00_metadata/{analysis}/pantranscriptome_samples_metadata.tsv
+  # sample: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/00_metadata/{analysis}/pantranscriptome_samples_metadata.tsv
+  sample: ref/pantranscriptome_samples_metadata.tsv
   # library: snakemake/iq_masked_genomic_config.tsv
   # library: snakemake/config.tsv
   library: snakemake/config_espresso_pseudomasked_genomic_expression.tsv
+
 
 params:
   cerberus:
@@ -37,6 +39,8 @@ pseudomasked_genomic_isoquant_guided:
 espresso_pseudomasked_genomic:
   gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/pseudomasked_genomic_espresso/{lab_rep}.gtf
 
+
+fmt_gtf: data/{analysis}/fmt_gtf/{tech_rep}.gtf
 
 cerberus:
   ics: data/{analysis}/cerb/{tech_rep}_ics.tsv
