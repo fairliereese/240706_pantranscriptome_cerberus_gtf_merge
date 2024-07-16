@@ -25,7 +25,7 @@ df = parse_config(config_tsv)
 df['analysis'] = analysis
 input_gtf = config[analysis]['gtf']
 
-df = df.loc[df.tech_rep == 'GM10493_1']
+df = df.loc[df.tech_rep.isin(['GM10493_1', 'GM12878_1'])]
 
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
