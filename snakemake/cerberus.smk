@@ -64,7 +64,7 @@ rule agg_ends_cfg:
         temp['ref'] = params.refs
         temp['add_ends'] = params.add_ends
         temp['source'] = [params.ref_source]+params.sample_sources
-        temp = temp[['fname', 'ref', 'add_ends', 'source']]
+        temp = temp[['fname', 'add_ends', 'ref', 'source']]
         temp.to_csv(output.cfg, header=None, index=None)
 
 rule agg_ends:

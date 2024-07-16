@@ -1,7 +1,6 @@
 # Merge sample-level GTFs into one GTF
 
 import pandas as pd
-import cerberus
 
 p = os.getcwd()
 sys.path.append(p)
@@ -70,7 +69,7 @@ rule fmt_iq_gtf:
         'cerberus'
     shell:
         """
-        python refmt_gtf.py {input.gtf} {output.gtf}
+        python snakemake/refmt_gtf.py {input.gtf} {output.gtf}
         """
 
 
