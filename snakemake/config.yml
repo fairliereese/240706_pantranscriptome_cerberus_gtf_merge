@@ -55,3 +55,6 @@ cerberus:
       annot_h5: data/{analysis}/cerb/ref/{tech_rep}.h5
   update:
       gtf: data/{analysis}/cerb/update/{tech_rep}.gtf
+  merge:
+      cfg: data/{analysis}/cerb/update/cfg.tsv
+      gtf: data/{analysis}/cerb/update/merged.gtf

@@ -25,7 +25,9 @@ df = parse_config(config_tsv)
 df['analysis'] = analysis
 input_gtf = config[analysis]['gtf']
 
-df = df.loc[df.tech_rep.isin(['GM10493_1', 'GM12878_1'])]
+df = df.loc[df.tech_rep.isin(['GM10493_1',
+                              'GM12878_1',
+                              'GM22300_1'])]
 
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
@@ -35,11 +37,13 @@ wildcard_constraints:
 
 rule all:
     input:
+        expand(config['cerberus']['merge']['gtf'],
+               analysis=analysis),
         expand(config['ref']['cerberus']['update']['gtf'],
                analysis=analysis),
-        expand(config['cerberus']['update']['gtf'],
-               tech_rep=df.tech_rep.tolist(),
-               analysis=analysis)
+        # expand(config['cerberus']['update']['gtf'],
+        #        tech_rep=df.tech_rep.tolist(),
+        #        analysis=analysis)
 
         # config['cerberus']['ref']['h5']
         # expand(config['cerberus']['agg']['ics']),
@@ -205,6 +209,41 @@ use rule update_gtf as cerb_update_gtf_ref with:
         source = config['ref']['gtf_ver']
     output:
         gtf = config['ref']['cerberus']['update']['gtf']
+
+
+################################
+############ merge cerb gtfs
+################################
+rule make_cerb_agg_gtf_cfg:
+    input:
+        gtfs = lambda wc: expand(rules.cerb_update_gtf_sample.output.gtf,
+                                 analysis=wc.analysis,
+                                 tech_rep=df.tech_rep.tolist()),
+    output:
+        tsv = config['cerberus']['merge']['cfg']
+    run:
+        make_cerb_agg_gtf_cfg(gtfs, tsv)
+
+rule cerb_merge_gtf:
+    input:
+        gtfs = rules.make_cerb_agg_gtf_cfg.input.gtfs,
+        cfg = rules.make_cerb_agg_gtf_cfg.output.tsv,
+        h5 = rules.cerb_write_ref.output.h5
+    output:
+        gtf = config['cerberus']['merge']['gtf']
+    conda:
+        'cerberus'
+    resources:
+        nodes = 4,
+        threads = 1
+    shell:
+        """
+        python snakemake/cerb_agg_gtfs.py \
+            {input.cfg} \
+            {input.h5} \
+            {output.gtf}
+        """
+
 
 
 
