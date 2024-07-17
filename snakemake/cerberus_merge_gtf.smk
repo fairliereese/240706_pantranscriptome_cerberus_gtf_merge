@@ -225,7 +225,7 @@ rule make_cerb_agg_gtf_cfg:
     output:
         tsv = config['cerberus']['merge']['cfg']
     run:
-        make_cerb_agg_gtf_cfg(gtfs, tsv)
+        make_cerb_agg_gtf_cfg(input.gtfs, output.tsv)
 
 rule cerb_merge_gtf:
     input:
