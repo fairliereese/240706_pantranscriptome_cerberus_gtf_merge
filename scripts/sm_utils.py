@@ -1,4 +1,5 @@
 import pandas as pd
+import pyranges as pr
 
 def parse_config(fname):
     df = pd.read_csv(fname, sep='\t')
@@ -17,3 +18,8 @@ def parse_config(fname):
     df['tech_rep'] = df['sample']+'_'+df['tech_rep_num'].astype(str)
 
     return df
+
+def make_cerb_agg_gtf_cfg(gtfs, ofile):
+    df = pd.DataFrame()
+    df['gtf'] = gtfs
+    df.to_csv(ofile, index=False, header=None, sep='\t')
