@@ -219,6 +219,9 @@ rule make_cerb_agg_gtf_cfg:
         gtfs = lambda wc: expand(rules.cerb_update_gtf_sample.output.gtf,
                                  analysis=wc.analysis,
                                  tech_rep=df.tech_rep.tolist()),
+    resources:
+        threads = 1,
+        nodes = 1
     output:
         tsv = config['cerberus']['merge']['cfg']
     run:
