@@ -43,3 +43,17 @@ def get_novel_gene_bed(gtf, bed, how='iq'):
 
     # save to bed
     df.to_bed(bed)
+
+def load_config(config_file=None):
+    """
+    Load snakemake config file as a dictionary
+    """
+    if not config_file:
+        d = os.path.dirname(__file__)
+        od = f'{d}/../snakemake/'
+        config_file = f'{od}/config.yml'
+
+    with open(config_file) as f:
+        config = yaml.safe_load(f)
+
+    return config
