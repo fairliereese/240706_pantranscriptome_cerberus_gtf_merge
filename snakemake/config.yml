@@ -40,7 +40,9 @@ espresso_pseudomasked_genomic:
   gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/pseudomasked_genomic_espresso/{lab_rep}.gtf
 
 
-fmt_gtf: data/{analysis}/fmt_gtf/{tech_rep}.gtf
+fmt:
+  novel_gene_bed: data/{analysis}/fmt/{tech_rep}_novel_gene.bed
+  gtf: data/{analysis}/fmt/{tech_rep}.gtf
 
 cerberus:
   ics: data/{analysis}/cerb/{tech_rep}_ics.tsv
