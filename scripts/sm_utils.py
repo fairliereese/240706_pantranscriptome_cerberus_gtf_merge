@@ -26,10 +26,13 @@ def make_cerb_agg_gtf_cfg(gtfs, ofile):
     df['gtf'] = gtfs
     df.to_csv(ofile, index=False, header=None, sep='\t')
 
+
 def get_novel_gene_bed(gtf, bed, how='iq'):
     df = pr.read_gtf(gtf).df
 
     # for isoquant
+    # TODO possibly make a get novel genes function
+    # should ask for what level ie transcript gene exon
     if how == 'iq':
         df = df.loc[(df.Feature=='gene')&\
                     (df.gene_id.str.contains('novel_gene'))]

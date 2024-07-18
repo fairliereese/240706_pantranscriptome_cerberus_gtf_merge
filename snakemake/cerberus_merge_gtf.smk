@@ -27,9 +27,9 @@ df = parse_config(config_tsv)
 df['analysis'] = analysis
 input_gtf = config[analysis]['gtf']
 
-# df = df.loc[df.tech_rep.isin(['GM10493_1',
-#                               'GM12878_1',
-#                               'GM22300_1'])]
+df = df.loc[df.tech_rep.isin(['GM10493_1',
+                              'GM12878_1',
+                              'GM22300_1'])]
 
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
@@ -39,11 +39,9 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(config['fmt']['novel_gene_merge_bed'],
-               analysis=analysis),
-        # expand(config['fmt']['novel_gene_bed'],
-        #     tech_rep=df.tech_rep.tolist(),
-        #            analysis=analysis)
+        expand(config['fmt']['gtf'],
+            tech_rep=df.tech_rep.tolist(),
+                   analysis=analysis)
 
         # expand(config['cerberus']['merge']['gtf'],
         #        analysis=analysis),
@@ -101,6 +99,7 @@ rule get_merged_novel_gene_bed:
 # format the gtf corrrectly first
 rule fmt_iq_gtf:
     input:
+        bed = config['fmt']['novel_gene_merge_bed'],
         gtf = lambda wc: expand(input_gtf,
                                 lab_rep=get_df_val(df,
                                 'lab_rep',
@@ -109,13 +108,15 @@ rule fmt_iq_gtf:
     resources:
         threads = 1,
         nodes = 1
+    params:
+        tool = tool
     output:
         gtf = config['fmt']['gtf']
     conda:
         'cerberus'
     shell:
         """
-        python snakemake/refmt_gtf.py {input.gtf} {output.gtf}
+        python snakemake/refmt_gtf.py {input.gtf} {input.bed} {output.gtf} {params.tool}
         """
 
 
