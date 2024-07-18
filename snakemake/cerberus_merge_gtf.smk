@@ -27,9 +27,9 @@ df = parse_config(config_tsv)
 df['analysis'] = analysis
 input_gtf = config[analysis]['gtf']
 
-df = df.loc[df.tech_rep.isin(['GM10493_1',
-                              'GM12878_1',
-                              'GM22300_1'])]
+# df = df.loc[df.tech_rep.isin(['GM10493_1',
+#                               'GM12878_1',
+#                               'GM22300_1'])]
 
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
@@ -39,7 +39,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(config['cerberus']['fmt']['novel_gene_merge_bed'],
+        expand(config['fmt']['novel_gene_merge_bed'],
                analysis=analysis),
         # expand(config['fmt']['novel_gene_bed'],
         #     tech_rep=df.tech_rep.tolist(),

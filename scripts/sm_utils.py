@@ -73,7 +73,10 @@ def merge_beds(beds, bed):
               slack=0)
 
     # assign each a random number
+    df = df.df
     df['num'] = [i for i in range(len(df.index))]
     df['Name'] = 'novel_gene_'+df['num'].astype(str)
     df.drop('num', axis=1, inplace=True)
+
+    df = pr.PyRanges(df)
     df.to_bed(bed)
