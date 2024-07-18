@@ -23,3 +23,23 @@ def make_cerb_agg_gtf_cfg(gtfs, ofile):
     df = pd.DataFrame()
     df['gtf'] = gtfs
     df.to_csv(ofile, index=False, header=None, sep='\t')
+
+def get_novel_gene_bed(gtf, bed, how='iq'):
+    df = pr.read_gtf(gtf).df
+
+    # for isoquant
+    if how == 'iq':
+        df = df.loc[(df.Feature=='gene')&\
+                    (df.gene_id.str.contains('novel_gene'))]
+
+    # get just bed fields
+    df = df[['Chromosome', 'Source', 'Start', 'End', 'Strand', 'gene_id']]
+    df.rename({'gene_id': 'Name'}, axis=1, inplace=True)
+
+    # merge overlapping guys
+    df = pr.PyRanges(df)
+    df = df.merge(strand=True,
+                  slack=0)
+
+    # save to bed
+    df.to_bed(bed)
