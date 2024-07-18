@@ -14,12 +14,14 @@ configfile: 'snakemake/config.yml'
 
 # settings for running  w/ different sets of data
 # analysis = 'espresso_pseudomasked_genomic'
+# tool = 'espresso'
 # config_tsv = f'snakemake/config_{analysis}_expression.tsv'
 # df = parse_config(config_tsv)
 # df['analysis'] = analysis
 # input_gtf = config[analysis]['gtf']
 
 analysis = 'pseudomasked_genomic_isoquant_guided'
+tool = 'iq'
 config_tsv = f'snakemake/config_{analysis}.tsv'
 df = parse_config(config_tsv)
 df['analysis'] = analysis
@@ -76,7 +78,7 @@ rule get_novel_gene_bed:
     output:
         bed = config['fmt']['novel_gene_bed']
     run:
-        get_novel_gene_bed(input.gtf, output.bed, how='iq')
+        get_novel_gene_bed(input.gtf, output.bed, how=tool)
 
 # format the gtf corrrectly first
 rule fmt_iq_gtf:
@@ -90,7 +92,7 @@ rule fmt_iq_gtf:
         threads = 1,
         nodes = 1
     output:
-        gtf = config['fmt_gtf']
+        gtf = config['fmt']['gtf']
     conda:
         'cerberus'
     shell:
