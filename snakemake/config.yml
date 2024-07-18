@@ -42,6 +42,7 @@ espresso_pseudomasked_genomic:
 
 fmt:
   novel_gene_bed: data/{analysis}/fmt/{tech_rep}_novel_gene.bed
+  novel_gene_merge_bed: data/{analysis}/fmt/novel_gene_merged.bed
   gtf: data/{analysis}/fmt/{tech_rep}.gtf
 
 cerberus:

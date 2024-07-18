@@ -39,9 +39,12 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(config['fmt']['novel_gene_bed'],
-            tech_rep=df.tech_rep.tolist(),
-                   analysis=analysis)
+        expand(config['cerberus']['fmt']['novel_gene_merge_bed'],
+               analysis=analysis),
+        # expand(config['fmt']['novel_gene_bed'],
+        #     tech_rep=df.tech_rep.tolist(),
+        #            analysis=analysis)
+
         # expand(config['cerberus']['merge']['gtf'],
         #        analysis=analysis),
         # expand(config['ref']['cerberus']['update']['gtf'],
@@ -71,7 +74,7 @@ rule get_novel_gene_bed:
                                 lab_rep=get_df_val(df,
                                 'lab_rep',
                                 wc.tech_rep,
-                                'tech_rep'))
+                                'tech_rep'))[0]
     resources:
         threads = 1,
         nodes = 1
@@ -79,6 +82,21 @@ rule get_novel_gene_bed:
         bed = config['fmt']['novel_gene_bed']
     run:
         get_novel_gene_bed(input.gtf, output.bed, how=tool)
+
+# merge novel gene intervals across samples
+# and give them a unique number
+rule get_merged_novel_gene_bed:
+    input:
+        beds = expand(rules.get_novel_gene_bed.output.bed,
+                     analysis=analysis,
+                     tech_rep=df.tech_rep.tolist())
+    resources:
+        threads = 1,
+        nodes = 2
+    output:
+        bed = config['fmt']['novel_gene_merge_bed']
+    run:
+        merge_beds(list(input.beds), output.bed)
 
 # format the gtf corrrectly first
 rule fmt_iq_gtf:

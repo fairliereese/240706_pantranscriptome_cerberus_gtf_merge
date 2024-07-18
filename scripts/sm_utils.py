@@ -1,5 +1,7 @@
 import pandas as pd
 import pyranges as pr
+import os
+import yaml
 
 def parse_config(fname):
     df = pd.read_csv(fname, sep='\t')
@@ -57,3 +59,21 @@ def load_config(config_file=None):
         config = yaml.safe_load(f)
 
     return config
+
+def merge_beds(beds, bed):
+    """
+    Merge beds into non-overlapping invervals
+    """
+    df = pd.DataFrame()
+    for b in beds:
+        temp = pr.read_bed(b).df
+        df = pd.concat([df, temp], axis=0)
+    df = pr.PyRanges(df)
+    df = df.merge(strand=True,
+              slack=0)
+
+    # assign each a random number
+    df['num'] = [i for i in range(len(df.index))]
+    df['Name'] = 'novel_gene_'+df['num'].astype(str)
+    df.drop('num', axis=1, inplace=True)
+    df.to_bed(bed)
