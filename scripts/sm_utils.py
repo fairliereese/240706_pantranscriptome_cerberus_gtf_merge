@@ -37,9 +37,9 @@ def get_gtf_novel_genes(gtf, tool):
         nov_gids = gtf.loc[(gtf.Feature=='gene')&\
                          (gtf.gene_id.str.contains('novel_gene')&\
                          (gtf.Source=='IsoQuant'))].gene_id.unique().tolist()
-    return novel_gids
+    return nov_gids
 
-def get_novel_gene_bed(gtf, bed, tool='iq'):
+def get_novel_gene_bed(gtf, bed):
     df = pr.read_gtf(gtf).df
 
     # get all entries belonging to novel genes
@@ -91,6 +91,7 @@ def rename_novel_genes(ifile, bed, ofile, tool):
     inds = gtf_df.loc[gtf_df.gene_id.isin(novel_gids)].index
     gtf_df.loc[inds, 'gene_id'] = gtf_df.loc[inds, 'gene_id'].map(gid_dict)
 
+    gtf_df = pr.PyRanges(gtf_df)
     gtf_df.to_gtf(ofile)
 
 def load_config(config_file=None):
