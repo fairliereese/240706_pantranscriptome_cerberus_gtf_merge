@@ -39,7 +39,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(config['fmt']['gtf'],
+        expand(config['fmt']['novel_gene_rename_gtf'],
             tech_rep=df.tech_rep.tolist(),
                    analysis=analysis)
 
@@ -96,8 +96,7 @@ rule get_merged_novel_gene_bed:
     run:
         merge_beds(list(input.beds), output.bed)
 
-# format the gtf corrrectly first
-rule fmt_iq_gtf:
+rule fmt_novel_gene_rename:
     input:
         bed = config['fmt']['novel_gene_merge_bed'],
         gtf = lambda wc: expand(input_gtf,
@@ -111,13 +110,35 @@ rule fmt_iq_gtf:
     params:
         tool = tool
     output:
-        gtf = config['fmt']['gtf']
-    conda:
-        'cerberus'
-    shell:
-        """
-        python snakemake/refmt_gtf.py {input.gtf} {input.bed} {output.gtf} {params.tool}
-        """
+        gtf = config['fmt']['novel_gene_rename_gtf']
+    run:
+        rename_novel_genes(input.gtf,
+                           input.bed,
+                           output.gtf,
+                           params.tool)
+                           
+# format the gtf corrrectly first
+# rule fmt_iq_gtf:
+#     input:
+#         bed = config['fmt']['novel_gene_merge_bed'],
+#         gtf = lambda wc: expand(input_gtf,
+#                                 lab_rep=get_df_val(df,
+#                                 'lab_rep',
+#                                 wc.tech_rep,
+#                                 'tech_rep'))
+#     resources:
+#         threads = 1,
+#         nodes = 1
+#     params:
+#         tool = tool
+#     output:
+#         gtf = config['fmt']['gtf']
+#     conda:
+#         'cerberus'
+#     shell:
+#         """
+#         python snakemake/refmt_gtf.py {input.gtf} {input.bed} {output.gtf} {params.tool}
+#         """
 
 
 
