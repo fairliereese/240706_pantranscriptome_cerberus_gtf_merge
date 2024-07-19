@@ -12,20 +12,20 @@ include: 'cerberus.smk'
 configfile: 'snakemake/config.yml'
 # config_tsv = config['meta']['library']
 
-# settings for running  w/ different sets of data
-analysis = 'espresso_pseudomasked_genomic'
-tool = 'espresso'
-config_tsv = f'snakemake/config_{analysis}_expression.tsv'
-df = parse_config(config_tsv)
-df['analysis'] = analysis
-input_gtf = config[analysis]['gtf']
-
-# analysis = 'pseudomasked_genomic_isoquant_guided'
-# tool = 'iq'
-# config_tsv = f'snakemake/config_{analysis}.tsv'
+# # settings for running  w/ different sets of data
+# analysis = 'espresso_pseudomasked_genomic'
+# tool = 'espresso'
+# config_tsv = f'snakemake/config_{analysis}_expression.tsv'
 # df = parse_config(config_tsv)
 # df['analysis'] = analysis
 # input_gtf = config[analysis]['gtf']
+
+analysis = 'pseudomasked_genomic_isoquant_guided'
+tool = 'iq'
+config_tsv = f'snakemake/config_{analysis}.tsv'
+df = parse_config(config_tsv)
+df['analysis'] = analysis
+input_gtf = config[analysis]['gtf']
 
 # df = df.loc[df.tech_rep.isin(['GM10493_1',
 #                               'GM12878_1',
@@ -39,7 +39,7 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(config['fmt']['novel_gene_rename_gtf'],
+        expand(config['fmt']['gtf'],
             tech_rep=df.tech_rep.tolist(),
                    analysis=analysis)
 
@@ -122,12 +122,7 @@ rule fmt_novel_gene_rename:
 # format the gtf corrrectly first
 rule fmt_iq_gtf:
     input:
-        bed = config['fmt']['novel_gene_merge_bed'],
-        gtf = lambda wc: expand(input_gtf,
-                                lab_rep=get_df_val(df,
-                                'lab_rep',
-                                wc.tech_rep,
-                                'tech_rep'))
+        gtf = config['fmt']['novel_gene_rename_gtf']
     resources:
         threads = 1,
         nodes = 1
@@ -139,7 +134,10 @@ rule fmt_iq_gtf:
         'cerberus'
     shell:
         """
-        python snakemake/refmt_gtf.py {input.gtf} {input.bed} {output.gtf} {params.tool}
+        python snakemake/refmt_gtf.py \
+            {input.gtf} \
+            {output.gtf} \
+            {params.tool}
         """
 
 
