@@ -39,7 +39,7 @@ def get_gtf_novel_genes(gtf, tool):
                          (gtf.Source=='IsoQuant'))].gene_id.unique().tolist()
     return nov_gids
 
-def get_novel_gene_bed(gtf, bed):
+def get_novel_gene_bed(gtf, bed, tool):
     df = pr.read_gtf(gtf).df
 
     # get all entries belonging to novel genes
@@ -70,26 +70,36 @@ def rename_novel_genes(ifile, bed, ofile, tool):
     nov_df = gtf_df.loc[gtf_df.gene_id.isin(nov_gids)]
     l1 = len(nov_df.index)
 
+    # use tid or gid based on tool
+    if tool == 'iq':
+        id_col = 'gene_id'
+    elif tool == 'espresso':
+        id_col = 'transcript_id'
+
     # merge w/ bed
     df = pr.read_bed(bed)
     nov_df = pr.PyRanges(nov_df)
     nov_df = nov_df.join(df,
                           how='left',
-                          strandedness='same')
+                          strandedness='same',
+                          preserve_order=True)
+
+    # sanity checks
     nov_df = nov_df.df
     l2 = len(nov_df.index)
     assert l1 == l2
     assert len(nov_df.loc[nov_df.Name.isnull()].index) == 0
 
-    # get a dictionary to map sample-level novel gene
-    # ids to cross-sample novel gene ids
-    gid_dict = dict([(o,n) for o,n in zip(nov_df.gene_id.tolist(),
-                                          nov_df.Name.tolist())])
+
+    # get a dict to map sample-level novel gene ids to cross-sample novel gene ids
+    id_dict = dict([(o,n) for o,n in zip(nov_df[id_col].tolist(),
+                                         nov_df['Name'].tolist())])
+    nov_df[[id_col, 'Name']].drop_duplicates().head()
 
     # now update full gtf
-    novel_gids = nov_df.gene_id.unique().tolist()
-    inds = gtf_df.loc[gtf_df.gene_id.isin(novel_gids)].index
-    gtf_df.loc[inds, 'gene_id'] = gtf_df.loc[inds, 'gene_id'].map(gid_dict)
+    nov_ids = nov_df[id_col].unique().tolist()
+    inds = gtf_df.loc[gtf_df[id_col].isin(nov_ids)].index
+    gtf_df.loc[inds, 'gene_id'] = gtf_df.loc[inds, id_col].map(id_dict)
 
     gtf_df = pr.PyRanges(gtf_df)
     gtf_df.to_gtf(ofile)

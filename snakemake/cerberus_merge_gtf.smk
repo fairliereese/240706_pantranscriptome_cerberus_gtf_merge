@@ -27,9 +27,9 @@ input_gtf = config[analysis]['gtf']
 # df['analysis'] = analysis
 # input_gtf = config[analysis]['gtf']
 
-df = df.loc[df.tech_rep.isin(['GM10493_1',
-                              'GM12878_1',
-                              'GM22300_1'])]
+# df = df.loc[df.tech_rep.isin(['GM10493_1',
+#                               'GM12878_1',
+#                               'GM22300_1'])]
 
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
@@ -73,13 +73,15 @@ rule get_novel_gene_bed:
                                 'lab_rep',
                                 wc.tech_rep,
                                 'tech_rep'))[0]
+    params:
+        tool = tool
     resources:
         threads = 1,
         nodes = 1
     output:
-        bed = config['fmt']['novel_gene_bed']
+        bed = temporary(config['fmt']['novel_gene_bed'])
     run:
-        get_novel_gene_bed(input.gtf, output.bed, tool=tool)
+        get_novel_gene_bed(input.gtf, output.bed, params.tool)
 
 # merge novel gene intervals across samples
 # and give them a unique number
@@ -92,7 +94,7 @@ rule get_merged_novel_gene_bed:
         threads = 1,
         nodes = 2
     output:
-        bed = config['fmt']['novel_gene_merge_bed']
+        bed = temporary(config['fmt']['novel_gene_merge_bed'])
     run:
         merge_beds(list(input.beds), output.bed)
 
@@ -110,7 +112,7 @@ rule fmt_novel_gene_rename:
     params:
         tool = tool
     output:
-        gtf = config['fmt']['novel_gene_rename_gtf']
+        gtf = temporary(config['fmt']['novel_gene_rename_gtf'])
     run:
         rename_novel_genes(input.gtf,
                            input.bed,
