@@ -1,6 +1,7 @@
 import sys
 import pyranges as pr
 import cerberus
+import pandas as pd
 
 def make_hier_entry(df, how='t'):
     """
@@ -32,13 +33,13 @@ def make_hier_entry(df, how='t'):
 
     return t_df
 
-def fmt_gtf(ifile, bed, ofile, tool):
+def fmt_gtf(ifile, ofile, tool):
     """
     Add gene name and transcript name
     columns in a more sensible way.
     """
 
-    df = pr.read_gtf(f).df
+    df = pr.read_gtf(ifile).df
 
     # espresso -- add gene entries
     if tool == 'espresso':
@@ -46,6 +47,9 @@ def fmt_gtf(ifile, bed, ofile, tool):
 
         # make gene entry
         g_df = make_hier_entry(df, how='g')
+        g_df['Source'] = 'Espresso'
+        g_df['Frame'] = '.'
+        g_df['Score'] = '.'
         l2 = len(g_df.loc[g_df.Feature=='gene'].index)
         assert l1 == l2
 
@@ -77,7 +81,7 @@ def main():
     output_file = sys.argv[2]
     tool = sys.argv[3]
 
-    fmt_gtf(input_file, bed_file, output_file, tool)
+    fmt_gtf(input_file, output_file, tool)
 
 if __name__ == "__main__":
     main()

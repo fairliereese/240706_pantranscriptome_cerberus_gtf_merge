@@ -12,20 +12,20 @@ include: 'cerberus.smk'
 configfile: 'snakemake/config.yml'
 # config_tsv = config['meta']['library']
 
-# # settings for running  w/ different sets of data
-# analysis = 'espresso_pseudomasked_genomic'
-# tool = 'espresso'
-# config_tsv = f'snakemake/config_{analysis}_expression.tsv'
-# df = parse_config(config_tsv)
-# df['analysis'] = analysis
-# input_gtf = config[analysis]['gtf']
-
-analysis = 'pseudomasked_genomic_isoquant_guided'
-tool = 'iq'
-config_tsv = f'snakemake/config_{analysis}.tsv'
+# settings for running  w/ different sets of data
+analysis = 'espresso_pseudomasked_genomic'
+tool = 'espresso'
+config_tsv = f'snakemake/config_{analysis}_expression.tsv'
 df = parse_config(config_tsv)
 df['analysis'] = analysis
 input_gtf = config[analysis]['gtf']
+
+# analysis = 'pseudomasked_genomic_isoquant_guided'
+# tool = 'iq'
+# config_tsv = f'snakemake/config_{analysis}.tsv'
+# df = parse_config(config_tsv)
+# df['analysis'] = analysis
+# input_gtf = config[analysis]['gtf']
 
 # df = df.loc[df.tech_rep.isin(['GM10493_1',
 #                               'GM12878_1',
@@ -39,14 +39,8 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(config['fmt']['gtf'],
-            tech_rep=df.tech_rep.tolist(),
-                   analysis=analysis)
-
-        # expand(config['cerberus']['merge']['gtf'],
-        #        analysis=analysis),
-        # expand(config['ref']['cerberus']['update']['gtf'],
-        #        analysis=analysis),
+        expand(config['cerberus']['merge']['gtf'],
+               analysis=analysis)
 
 
 
@@ -120,7 +114,7 @@ rule fmt_novel_gene_rename:
                            params.tool)
 
 # format the gtf corrrectly first
-rule fmt_iq_gtf:
+rule fmt_gtf:
     input:
         gtf = config['fmt']['novel_gene_rename_gtf']
     resources:
@@ -158,7 +152,7 @@ use rule gtf_to_ends as ref_gtf_to_ends with:
         dist =  lambda wc: config['params']['cerberus'][wc.end_mode]['dist'],
         slack = lambda wc: config['params']['cerberus'][wc.end_mode]['slack']
     output:
-        bed = config['ref']['cerberus']['ends']
+        bed = temporary(config['ref']['cerberus']['ends'])
 
 use rule gtf_to_ic as cerb_gtf_to_ic with:
     input:
@@ -169,7 +163,7 @@ use rule gtf_to_ic as cerb_gtf_to_ic with:
         #                                  wc.tech_rep,
         #                                  'tech_rep'))
     output:
-        tsv = config['cerberus']['ics']
+        tsv = temporary(config['cerberus']['ics'])
 
 use rule agg_ics_cfg as cerb_agg_ics_cfg with:
     input:
@@ -181,7 +175,7 @@ use rule agg_ics_cfg as cerb_agg_ics_cfg with:
         ref_source = config['ref']['gtf_ver'],
         sources = df.tech_rep.tolist()
     output:
-        cfg = config['cerberus']['agg']['ics_cfg']
+        cfg = temporary(config['cerberus']['agg']['ics_cfg'])
 
 use rule agg_ics as cerb_agg_ic with:
     input:
@@ -198,7 +192,7 @@ use rule gtf_to_ends as cerb_gtf_to_ends with:
         dist =  lambda wc: config['params']['cerberus'][wc.end_mode]['dist'],
         slack = lambda wc: config['params']['cerberus'][wc.end_mode]['slack']
     output:
-        bed = config['cerberus']['ends']
+        bed = temporary(config['cerberus']['ends'])
 
 use rule agg_ends_cfg as cerb_agg_config with:
     input:
@@ -213,7 +207,7 @@ use rule agg_ends_cfg as cerb_agg_config with:
         ref_source = config['ref']['gtf_ver'],
         sample_sources = df.tech_rep.tolist()
     output:
-        cfg = config['cerberus']['agg']['ends_cfg']
+        cfg = temporary(config['cerberus']['agg']['ends_cfg'])
 
 use rule agg_ends as cerb_agg_ends with:
     input:
@@ -223,7 +217,7 @@ use rule agg_ends as cerb_agg_ends with:
     params:
         slack = lambda wc: config['params']['cerberus'][wc.end_mode]['agg_slack']
     output:
-        agg_ends = config['cerberus']['agg']['ends']
+        agg_ends = temporary(config['cerberus']['agg']['ends'])
 
 use rule write_ref as cerb_write_ref with:
     input:
@@ -244,7 +238,7 @@ use rule annot_transcriptome as cerb_annot_sample with:
     params:
         source = lambda wc: wc.tech_rep
     output:
-        h5 = config['cerberus']['ref']['annot_h5']
+        h5 = temporary(config['cerberus']['ref']['annot_h5'])
 
 use rule update_gtf as cerb_update_gtf_sample with:
     input:
@@ -286,7 +280,7 @@ rule make_cerb_agg_gtf_cfg:
         threads = 1,
         nodes = 1
     output:
-        tsv = config['cerberus']['merge']['cfg']
+        tsv = temporary(config['cerberus']['merge']['cfg'])
     run:
         make_cerb_agg_gtf_cfg(input.gtfs, output.tsv)
 
@@ -301,7 +295,7 @@ rule cerb_merge_gtf:
         'cerberus'
     resources:
         nodes = 4,
-        threads = 1
+        threads = 1s
     shell:
         """
         python snakemake/cerb_agg_gtfs.py \
