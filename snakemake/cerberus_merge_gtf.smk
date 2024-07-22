@@ -12,13 +12,13 @@ include: 'cerberus.smk'
 configfile: 'snakemake/config.yml'
 # config_tsv = config['meta']['library']
 
-# settings for running  w/ different sets of data
-analysis = 'espresso_pseudomasked_genomic'
-tool = 'espresso'
-config_tsv = f'snakemake/config_{analysis}_expression.tsv'
-df = parse_config(config_tsv)
-df['analysis'] = analysis
-input_gtf = config[analysis]['gtf']
+# # settings for running  w/ different sets of data
+# analysis = 'espresso_pseudomasked_genomic'
+# tool = 'espresso'
+# config_tsv = f'snakemake/config_{analysis}_expression.tsv'
+# df = parse_config(config_tsv)
+# df['analysis'] = analysis
+# input_gtf = config[analysis]['gtf']
 
 # analysis = 'pseudomasked_genomic_isoquant_guided'
 # tool = 'iq'
@@ -26,6 +26,13 @@ input_gtf = config[analysis]['gtf']
 # df = parse_config(config_tsv)
 # df['analysis'] = analysis
 # input_gtf = config[analysis]['gtf']
+
+analysis = 'pseudomasked_genomic_flair_guided'
+tool = 'flair'
+config_tsv = f'snakemake/config_{analysis}.tsv'
+df = parse_config(config_tsv)
+df['analysis'] = analysis
+input_gtf = config[analysis]['gtf']
 
 # df = df.loc[df.tech_rep.isin(['GM10493_1',
 #                               'GM12878_1',
@@ -156,7 +163,7 @@ use rule gtf_to_ends as ref_gtf_to_ends with:
 
 use rule gtf_to_ic as cerb_gtf_to_ic with:
     input:
-        gtf = rules.fmt_iq_gtf.output.gtf
+        gtf = rules.fmt_gtf.output.gtf
         # gtf = lambda wc: expand(input_gtf,
         #                         lab_rep=get_df_val(df,
         #                                  'lab_rep',
@@ -295,7 +302,7 @@ rule cerb_merge_gtf:
         'cerberus'
     resources:
         nodes = 4,
-        threads = 1s
+        threads = 1
     shell:
         """
         python snakemake/cerb_agg_gtfs.py \

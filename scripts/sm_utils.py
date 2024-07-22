@@ -33,6 +33,8 @@ def get_gtf_novel_genes(gtf, tool):
     """
     if tool == 'espresso':
         nov_gids = ['NA']
+    elif tool == 'flair':
+        nov_gids = df.loc[df.gene_id.str.contains(':')].gene_id.unique().tolist()
     elif tool == 'iq':
         nov_gids = gtf.loc[(gtf.Feature=='gene')&\
                          (gtf.gene_id.str.contains('novel_gene')&\
@@ -72,6 +74,8 @@ def rename_novel_genes(ifile, bed, ofile, tool):
 
     # use tid or gid based on tool
     if tool == 'iq':
+        id_col = 'gene_id'
+    elif tool == 'flair':
         id_col = 'gene_id'
     elif tool == 'espresso':
         id_col = 'transcript_id'

@@ -39,6 +39,8 @@ pseudomasked_genomic_isoquant_guided:
 espresso_pseudomasked_genomic:
   gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/pseudomasked_genomic_espresso/{lab_rep}.gtf
 
+pseudomasked_genomic_flair_guided:
+  gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/pseudomasked_genomic_flair_guided/{lab_rep}.isoforms.gtf
 
 fmt:
   novel_gene_bed: data/{analysis}/fmt/{tech_rep}_novel_gene.bed
