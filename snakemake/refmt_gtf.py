@@ -42,7 +42,7 @@ def fmt_gtf(ifile, ofile, tool):
     df = pr.read_gtf(ifile).df
 
     # espresso -- add gene entries
-    if tool == 'espresso':
+    if tool == 'espresso' or tool == 'flair':
         l1 = len(df.gene_id.unique().tolist())
 
         # make gene entry
