@@ -47,7 +47,8 @@ def fmt_gtf(ifile, ofile, tool):
 
         # make gene entry
         g_df = make_hier_entry(df, how='g')
-        g_df['Source'] = 'Espresso'
+        if tool == 'espresso': source = 'Espresso'
+        g_df['Source'] = source
         g_df['Frame'] = '.'
         g_df['Score'] = '.'
         l2 = len(g_df.loc[g_df.Feature=='gene'].index)

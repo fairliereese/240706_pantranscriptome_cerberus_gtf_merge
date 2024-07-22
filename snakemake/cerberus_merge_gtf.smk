@@ -12,13 +12,13 @@ include: 'cerberus.smk'
 configfile: 'snakemake/config.yml'
 # config_tsv = config['meta']['library']
 
-# # settings for running  w/ different sets of data
-# analysis = 'espresso_pseudomasked_genomic'
-# tool = 'espresso'
-# config_tsv = f'snakemake/config_{analysis}_expression.tsv'
-# df = parse_config(config_tsv)
-# df['analysis'] = analysis
-# input_gtf = config[analysis]['gtf']
+# settings for running  w/ different sets of data
+analysis = 'espresso_pseudomasked_genomic'
+tool = 'espresso'
+config_tsv = f'snakemake/config_{analysis}_expression.tsv'
+df = parse_config(config_tsv)
+df['analysis'] = analysis
+input_gtf = config[analysis]['gtf']
 
 # analysis = 'pseudomasked_genomic_isoquant_guided'
 # tool = 'iq'
@@ -27,12 +27,12 @@ configfile: 'snakemake/config.yml'
 # df['analysis'] = analysis
 # input_gtf = config[analysis]['gtf']
 
-analysis = 'pseudomasked_genomic_flair_guided'
-tool = 'flair'
-config_tsv = f'snakemake/config_{analysis}.tsv'
-df = parse_config(config_tsv)
-df['analysis'] = analysis
-input_gtf = config[analysis]['gtf']
+# analysis = 'pseudomasked_genomic_flair_guided'
+# tool = 'flair'
+# config_tsv = f'snakemake/config_{analysis}.tsv'
+# df = parse_config(config_tsv)
+# df['analysis'] = analysis
+# input_gtf = config[analysis]['gtf']
 
 # df = df.loc[df.tech_rep.isin(['GM10493_1',
 #                               'GM12878_1',
@@ -46,6 +46,8 @@ wildcard_constraints:
 
 rule all:
     input:
+        expand(config['cerberus']['merge']['h5'],
+         analysis=analysis),
         expand(config['cerberus']['merge']['gtf'],
                analysis=analysis)
 
@@ -312,6 +314,37 @@ rule cerb_merge_gtf:
         """
 
 
+##
+rule make_cerb_agg_t_map_cfg:
+    input:
+        h5s = lambda wc: expand(rules.cerb_annot_sample.output.h5,
+                                 analysis=wc.analysis,
+                                 tech_rep=df.tech_rep.tolist()),
+    resources:
+        threads = 1,
+        nodes = 1
+    output:
+        tsv = temporary(config['cerberus']['merge']['cfg_h5'])
+    run:
+        make_cerb_agg_gtf_cfg(input.gtfs, output.tsv)
+
+rule cerb_merge_t_map:
+    input:
+        gtfs = rules.make_cerb_agg_t_map_cfg.input.h5s,
+        cfg = rules.make_cerb_agg_t_map_cfg.output.tsv
+    output:
+        h5 = config['cerberus']['merge']['h5']
+    conda:
+        'cerberus'
+    resources:
+        nodes = 4,
+        threads = 1
+    shell:
+        """
+        python snakemake/cerb_agg_t_maps.py \
+            {input.cfg} \
+            {output.gtf}
+        """
 
 
 # use rule agg_ends_cfg as cerb_agg_tss_config with:

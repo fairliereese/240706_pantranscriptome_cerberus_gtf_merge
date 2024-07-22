@@ -34,7 +34,7 @@ def get_gtf_novel_genes(gtf, tool):
     if tool == 'espresso':
         nov_gids = ['NA']
     elif tool == 'flair':
-        nov_gids = df.loc[df.gene_id.str.contains(':')].gene_id.unique().tolist()
+        nov_gids = gtf.loc[gtf.gene_id.str.contains(':')].gene_id.unique().tolist()
     elif tool == 'iq':
         nov_gids = gtf.loc[(gtf.Feature=='gene')&\
                          (gtf.gene_id.str.contains('novel_gene')&\

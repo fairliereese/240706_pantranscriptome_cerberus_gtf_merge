@@ -12,13 +12,13 @@ include: 'cerberus.smk'
 configfile: 'snakemake/config.yml'
 # config_tsv = config['meta']['library']
 
-# # settings for running  w/ different sets of data
-# analysis = 'espresso_pseudomasked_genomic'
-# tool = 'espresso'
-# config_tsv = f'snakemake/config_{analysis}_expression.tsv'
-# df = parse_config(config_tsv)
-# df['analysis'] = analysis
-# input_gtf = config[analysis]['gtf']
+# settings for running  w/ different sets of data
+analysis = 'espresso_pseudomasked_genomic'
+tool = 'espresso'
+config_tsv = f'snakemake/config_{analysis}_expression.tsv'
+df = parse_config(config_tsv)
+df['analysis'] = analysis
+input_gtf = config[analysis]['gtf']
 
 # analysis = 'pseudomasked_genomic_isoquant_guided'
 # tool = 'iq'
@@ -27,12 +27,12 @@ configfile: 'snakemake/config.yml'
 # df['analysis'] = analysis
 # input_gtf = config[analysis]['gtf']
 
-analysis = 'pseudomasked_genomic_flair_guided'
-tool = 'flair'
-config_tsv = f'snakemake/config_{analysis}.tsv'
-df = parse_config(config_tsv)
-df['analysis'] = analysis
-input_gtf = config[analysis]['gtf']
+# analysis = 'pseudomasked_genomic_flair_guided'
+# tool = 'flair'
+# config_tsv = f'snakemake/config_{analysis}.tsv'
+# df = parse_config(config_tsv)
+# df['analysis'] = analysis
+# input_gtf = config[analysis]['gtf']
 
 # df = df.loc[df.tech_rep.isin(['GM10493_1',
 #                               'GM12878_1',
@@ -46,6 +46,8 @@ wildcard_constraints:
 
 rule all:
     input:
+        expand(config['cerberus']['merge']['h5'],
+         analysis=analysis),
         expand(config['cerberus']['merge']['gtf'],
                analysis=analysis)
 
