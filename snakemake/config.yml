@@ -64,3 +64,5 @@ cerberus:
   merge:
       cfg: data/{analysis}/cerb/update/cfg.tsv
       gtf: data/{analysis}/cerb/update/merged.gtf
+      cfg_h5: data/{analysis}/cerb/update/cfg_h5.tsv
+      h5: data/{analysis}/cerb/update/merged.h5

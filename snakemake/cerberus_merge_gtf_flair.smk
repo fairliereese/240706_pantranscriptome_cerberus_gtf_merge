@@ -312,6 +312,37 @@ rule cerb_merge_gtf:
         """
 
 
+##
+rule make_cerb_agg_t_map_cfg:
+    input:
+        h5s = lambda wc: expand(rules.cerb_annot_sample.output.h5,
+                                 analysis=wc.analysis,
+                                 tech_rep=df.tech_rep.tolist()),
+    resources:
+        threads = 1,
+        nodes = 1
+    output:
+        tsv = temporary(config['cerberus']['merge']['cfg_h5'])
+    run:
+        make_cerb_agg_gtf_cfg(input.gtfs, output.tsv)
+
+rule cerb_merge_t_map:
+    input:
+        gtfs = rules.make_cerb_agg_t_map_cfg.input.h5s,
+        cfg = rules.make_cerb_agg_t_map_cfg.output.tsv
+    output:
+        h5 = config['cerberus']['merge']['h5']
+    conda:
+        'cerberus'
+    resources:
+        nodes = 4,
+        threads = 1
+    shell:
+        """
+        python snakemake/cerb_agg_t_maps.py \
+            {input.cfg} \
+            {output.gtf}
+        """
 
 
 # use rule agg_ends_cfg as cerb_agg_tss_config with:
