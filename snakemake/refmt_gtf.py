@@ -44,7 +44,7 @@ def fmt_gtf(ifile, ref_file, ofile, tool):
 
     # flair -- rename antisense genes
     if tool == 'flair':
-        ref_df = pr.read_gtf(ref).df
+        ref_df = pr.read_gtf(ref_file).df
 
         # get strand, gene id, and transcript id of flair transcripts
         df = df[['gene_id', 'transcript_id', 'Strand']].drop_duplicates()
@@ -62,12 +62,14 @@ def fmt_gtf(ifile, ref_file, ofile, tool):
 
         # limit to things on the opposite strand as ref
         # and replace gene id for thos
-        df = df.loc[df.Strand!=df.Strand_ref]
-        tids = df.transcript_id.unique().tolist()
+        temp = df.loc[(df.Strand!=df.Strand_ref)]
+        tids = temp.transcript_id.unique().tolist()
         inds = gtf_df.loc[gtf_df.transcript_id.isin(tids)].index
-        gtf_df.loc[inds, 'gene_id'] = 'novel_gene_antisense_'+gtf_df.loc[inds, 'gene_id']
+        gtf_df.loc[inds, 'gene_id'] = gtf_df.loc[inds, 'gene_id']+'_antisense'
+
         l1 = len(gtf_df.gene_id.unique())
         l2 = len(gtf_df[['Strand', 'gene_id']].drop_duplicates())
+        import pdb; pdb.set_trace()
         assert l1 == l2
 
 
@@ -80,7 +82,7 @@ def fmt_gtf(ifile, ref_file, ofile, tool):
         g_df = make_hier_entry(df, how='g')
 
         if tool == 'espresso': source = 'Espresso'
-        elif tool = 'flair': source = 'FLAIR'
+        elif tool == 'flair': source = 'FLAIR'
         g_df['Source'] = source
         g_df['Frame'] = '.'
         g_df['Score'] = '.'

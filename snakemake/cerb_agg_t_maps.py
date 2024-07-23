@@ -11,7 +11,7 @@ def merge_cerb_h5s(h5s, ofile):
         t_map = ca.t_map.copy(deep=True)
         df = pd.concat([df, t_map], axis=0)
 
-    ca.t_map = t_map
+    ca.t_map = df
     ca.write(ofile)
 
 

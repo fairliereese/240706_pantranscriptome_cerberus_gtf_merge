@@ -12,13 +12,13 @@ include: 'cerberus.smk'
 configfile: 'snakemake/config.yml'
 # config_tsv = config['meta']['library']
 
-# settings for running  w/ different sets of data
-analysis = 'espresso_pseudomasked_genomic'
-tool = 'espresso'
-config_tsv = f'snakemake/config_{analysis}_expression.tsv'
-df = parse_config(config_tsv)
-df['analysis'] = analysis
-input_gtf = config[analysis]['gtf']
+# # settings for running  w/ different sets of data
+# analysis = 'espresso_pseudomasked_genomic'
+# tool = 'espresso'
+# config_tsv = f'snakemake/config_{analysis}_expression.tsv'
+# df = parse_config(config_tsv)
+# df['analysis'] = analysis
+# input_gtf = config[analysis]['gtf']
 
 # analysis = 'pseudomasked_genomic_isoquant_guided'
 # tool = 'iq'
@@ -27,12 +27,12 @@ input_gtf = config[analysis]['gtf']
 # df['analysis'] = analysis
 # input_gtf = config[analysis]['gtf']
 
-# analysis = 'pseudomasked_genomic_flair_guided'
-# tool = 'flair'
-# config_tsv = f'snakemake/config_{analysis}.tsv'
-# df = parse_config(config_tsv)
-# df['analysis'] = analysis
-# input_gtf = config[analysis]['gtf']
+analysis = 'pseudomasked_genomic_flair_guided'
+tool = 'flair'
+config_tsv = f'snakemake/config_{analysis}.tsv'
+df = parse_config(config_tsv)
+df['analysis'] = analysis
+input_gtf = config[analysis]['gtf']
 
 # df = df.loc[df.tech_rep.isin(['GM10493_1',
 #                               'GM12878_1',
@@ -125,15 +125,15 @@ rule fmt_novel_gene_rename:
 # format the gtf corrrectly first
 rule fmt_gtf:
     input:
-        gtf = config['fmt']['novel_gene_rename_gtf']
+        gtf = config['fmt']['novel_gene_rename_gtf'],
+        ref_gtf = config['ref']['gtf']
     resources:
         threads = 1,
-        nodes = 1
+        nodes = 2
     params:
         tool = tool
     output:
-        gtf = config['fmt']['gtf'],
-        ref_gtf = rules.ref_gtf_to_ic.input.gtf
+        gtf = config['fmt']['gtf']
     conda:
         'cerberus'
     shell:
