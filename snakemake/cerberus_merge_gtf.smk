@@ -132,13 +132,15 @@ rule fmt_gtf:
     params:
         tool = tool
     output:
-        gtf = config['fmt']['gtf']
+        gtf = config['fmt']['gtf'],
+        ref_gtf = rules.ref_gtf_to_ic.input.gtf
     conda:
         'cerberus'
     shell:
         """
         python snakemake/refmt_gtf.py \
             {input.gtf} \
+            {input.ref_gtf} \
             {output.gtf} \
             {params.tool}
         """
@@ -326,7 +328,7 @@ rule make_cerb_agg_t_map_cfg:
     output:
         tsv = temporary(config['cerberus']['merge']['cfg_h5'])
     run:
-        make_cerb_agg_gtf_cfg(input.gtfs, output.tsv)
+        make_cerb_agg_gtf_cfg(input.h5s, output.tsv)
 
 rule cerb_merge_t_map:
     input:
@@ -343,7 +345,7 @@ rule cerb_merge_t_map:
         """
         python snakemake/cerb_agg_t_maps.py \
             {input.cfg} \
-            {output.gtf}
+            {output.h5}
         """
 
 

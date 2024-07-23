@@ -22,7 +22,7 @@ def main():
 
     input_file = sys.argv[1]
     df = pd.read_csv(input_file, sep='\t', header=None)
-    gtfs = df[0].tolist()
+    h5s = df[0].tolist()
     ofile = sys.argv[2]
 
     merge_cerb_h5s(h5s, ofile)

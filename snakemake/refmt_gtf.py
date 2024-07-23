@@ -33,21 +33,54 @@ def make_hier_entry(df, how='t'):
 
     return t_df
 
-def fmt_gtf(ifile, ofile, tool):
+def fmt_gtf(ifile, ref_file, ofile, tool):
     """
     Add gene name and transcript name
     columns in a more sensible way.
     """
 
     df = pr.read_gtf(ifile).df
+    gtf_df = df.copy(deep=True)
 
-    # espresso -- add gene entries
+    # flair -- rename antisense genes
+    if tool == 'flair':
+        ref_df = pr.read_gtf(ref).df
+
+        # get strand, gene id, and transcript id of flair transcripts
+        df = df[['gene_id', 'transcript_id', 'Strand']].drop_duplicates()
+        df['gid_stable'] = cerberus.get_stable_gid(df, 'gene_id')
+
+        # get strand and gene id for reference
+        ref_df = ref_df[['gene_id', 'Strand']].drop_duplicates()
+        ref_df['gid_stable'] = cerberus.get_stable_gid(ref_df, 'gene_id')
+
+        # merge w/ reference to figure out which transcripts are antisense
+        df = df.merge(ref_df,
+                      how='left',
+                      on='gid_stable',
+                      suffixes=('', '_ref'))
+
+        # limit to things on the opposite strand as ref
+        # and replace gene id for thos
+        df = df.loc[df.Strand!=df.Strand_ref]
+        tids = df.transcript_id.unique().tolist()
+        inds = gtf_df.loc[gtf_df.transcript_id.isin(tids)].index
+        gtf_df.loc[inds, 'gene_id'] = 'novel_gene_antisense_'+gtf_df.loc[inds, 'gene_id']
+        l1 = len(gtf_df.gene_id.unique())
+        l2 = len(gtf_df[['Strand', 'gene_id']].drop_duplicates())
+        assert l1 == l2
+
+
+
+    # espresso and flair -- add gene entries
     if tool == 'espresso' or tool == 'flair':
         l1 = len(df.gene_id.unique().tolist())
 
         # make gene entry
         g_df = make_hier_entry(df, how='g')
+
         if tool == 'espresso': source = 'Espresso'
+        elif tool = 'flair': source = 'FLAIR'
         g_df['Source'] = source
         g_df['Frame'] = '.'
         g_df['Score'] = '.'
@@ -59,7 +92,7 @@ def fmt_gtf(ifile, ofile, tool):
         df = cerberus.sort_gtf(df)
 
     # iq -- add gene names and transcript names
-    elif tool == 'iq':
+    if tool == 'iq':
 
         # just grab all the gene ids to be the gene names
         df['gene_name'] = df['gene_id']
@@ -74,15 +107,16 @@ def fmt_gtf(ifile, ofile, tool):
     df.to_gtf(ofile)
 
 def main():
-    if len(sys.argv) != 4:
-        print("Usage: python script_name.py <input_gtf_file> <output_gtf_file> <tool>")
+    if len(sys.argv) != 5:
+        print("Usage: python script_name.py <input_gtf_file> <ref_gtf_file> <output_gtf_file> <tool>")
         sys.exit(1)
 
     input_file = sys.argv[1]
-    output_file = sys.argv[2]
-    tool = sys.argv[3]
+    ref_file = sys.argv[2]
+    output_file = sys.argv[3]
+    tool = sys.argv[4]
 
-    fmt_gtf(input_file, output_file, tool)
+    fmt_gtf(input_file, ref_file, output_file, tool)
 
 if __name__ == "__main__":
     main()
