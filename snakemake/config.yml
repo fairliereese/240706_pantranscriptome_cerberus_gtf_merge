@@ -44,6 +44,13 @@ pseudomasked_genomic_flair_guided:
 
 fmt:
   novel_gene_bed: data/{analysis}/fmt/{tech_rep}_novel_gene.bed
+  novel_gene_gtf: data/{analysis}/fmt/{tech_rep}_novel_gene.gtf
+  novel_gene_merge_gtf: data/{analysis}/fmt/novel_gene_merged.gtf
+  novel_gene_merge_gtf: data/{analysis}/fmt/novel_gene_merged.gtf
+  novel_gene_merge_build_loci_gtf: data/{analysis}/fmt/novel_gene_build_loci_merged.gtf
+
+  novel_gene_tid_to_gid: data/{analysis}/fmt/novel_gene_tid_to_gid.tsv
+
   novel_gene_merge_bed: data/{analysis}/fmt/novel_gene_merged.bed
   novel_gene_rename_gtf: data/{analysis}/fmt/{tech_rep}_novel_gene_rename.gtf
   gtf: data/{analysis}/fmt/{tech_rep}.gtf
@@ -66,3 +73,6 @@ cerberus:
       gtf: data/{analysis}/cerb/update/merged.gtf
       cfg_h5: data/{analysis}/cerb/update/cfg_h5.tsv
       h5: data/{analysis}/cerb/update/merged.h5
+
+software:
+  buildLoci: /gpfs/home/bsc/bsc083001/mele_lab/bin/buildLoci/buildLoci.pl

@@ -40,6 +40,10 @@ def fmt_gtf(ifile, ref_file, ofile, tool):
     """
 
     df = pr.read_gtf(ifile).df
+
+    # limit to just transcripts and exons b/c we'll just
+    # reconstruct the genes
+    df = df.loc[df.Feature.isin(['transcript', 'exon'])]
     gtf_df = df.copy(deep=True)
 
     # flair -- rename antisense genes
@@ -61,48 +65,46 @@ def fmt_gtf(ifile, ref_file, ofile, tool):
                       suffixes=('', '_ref'))
 
         # limit to things on the opposite strand as ref
-        # and replace gene id for thos
-        temp = df.loc[(df.Strand!=df.Strand_ref)]
+        # and known things
+        # and replace gene id for those
+        temp = df.loc[(df.Strand!=df.Strand_ref)&\
+                      (df.Strand_ref.notnull())]
         tids = temp.transcript_id.unique().tolist()
         inds = gtf_df.loc[gtf_df.transcript_id.isin(tids)].index
         gtf_df.loc[inds, 'gene_id'] = gtf_df.loc[inds, 'gene_id']+'_antisense'
 
         l1 = len(gtf_df.gene_id.unique())
         l2 = len(gtf_df[['Strand', 'gene_id']].drop_duplicates())
-        import pdb; pdb.set_trace()
+
+        # make sure we have the same number of gene ids at the end (l2)
+        # as we did unique gene id + strand combos at the beginning (l1)
         assert l1 == l2
 
+        # definitionally we are making novel loci by merging
+        # on strands. So make sure we don't have any novel genes
+        # w/ antisense designation
+        assert len(df.loc[(df.gene_id.str.contains('LOC'))&\
+                     (df.gene_id.str.contains('antisense'))].index) == 0
 
+    # make new gene entries for everything
+    df = gtf_df.copy(deep=True)
+    l1 = len(df.gene_id.unique().tolist())
 
-    # espresso and flair -- add gene entries
-    if tool == 'espresso' or tool == 'flair':
-        l1 = len(df.gene_id.unique().tolist())
+    # make gene entry
+    g_df = make_hier_entry(df, how='g')
 
-        # make gene entry
-        g_df = make_hier_entry(df, how='g')
+    if tool == 'espresso': source = 'Espresso'
+    elif tool == 'flair': source = 'FLAIR'
+    elif tool == 'iq': source = 'IsoQuant'
+    g_df['Source'] = source
+    g_df['Frame'] = '.'
+    g_df['Score'] = '.'
+    l2 = len(g_df.loc[g_df.Feature=='gene'].index)
+    assert l1 == l2
 
-        if tool == 'espresso': source = 'Espresso'
-        elif tool == 'flair': source = 'FLAIR'
-        g_df['Source'] = source
-        g_df['Frame'] = '.'
-        g_df['Score'] = '.'
-        l2 = len(g_df.loc[g_df.Feature=='gene'].index)
-        assert l1 == l2
-
-        # concat them and then sort gtf
-        df = pd.concat([df, g_df], axis=0)
-        df = cerberus.sort_gtf(df)
-
-    # iq -- add gene names and transcript names
-    if tool == 'iq':
-
-        # just grab all the gene ids to be the gene names
-        df['gene_name'] = df['gene_id']
-
-        # for transcripts / other transcript-level features do the
-        # same but restrict to those feats
-        inds = df.loc[df.Feature != 'gene'].index
-        df.loc[inds, 'transcript_name'] = df.loc[inds, 'transcript_id']
+    # concat them and then sort gtf
+    df = pd.concat([df, g_df], axis=0)
+    df = cerberus.sort_gtf(df)
 
     # convert + save
     df = pr.PyRanges(df)

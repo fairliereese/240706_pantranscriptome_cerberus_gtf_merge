@@ -3,6 +3,9 @@ import pyranges as pr
 import os
 import yaml
 
+def fmt_list_for_cli(x, sep=' '):
+    return f'{sep}'.join(x)
+
 def parse_config(fname):
     df = pd.read_csv(fname, sep='\t')
     df['sample'] = df.lab_rep.str.rsplit('_', n=1, expand=True)[1]
@@ -41,6 +44,19 @@ def get_gtf_novel_genes(gtf, tool):
                          (gtf.Source=='IsoQuant'))].gene_id.unique().tolist()
     return nov_gids
 
+def get_novel_gene_gtf(gtf, ofile, tool):
+    """
+    Get GTF file of all novel gene entries
+    """
+    df = pr.read_gtf(gtf).df
+
+    # get all entries belonging to novel genes
+    novel_gids = get_gtf_novel_genes(df, tool)
+    df = df.loc[df.gene_id.isin(novel_gids)]
+
+    df = pr.PyRanges(df)
+    df.to_gtf(ofile)
+
 def get_novel_gene_bed(gtf, bed, tool):
     df = pr.read_gtf(gtf).df
 
@@ -60,7 +76,7 @@ def get_novel_gene_bed(gtf, bed, tool):
     # save to bed
     df.to_bed(bed)
 
-def rename_novel_genes(ifile, bed, ofile, tool):
+def rename_novel_genes(ifile, id_map, ofile, tool):
     """
     Rename novel genes based on the name of overlapping bed regions
     in a GTF file
@@ -69,39 +85,41 @@ def rename_novel_genes(ifile, bed, ofile, tool):
     # get entries w/ novel GIDs
     gtf_df = pr.read_gtf(ifile, as_df=True)
     nov_gids = get_gtf_novel_genes(gtf_df, tool)
-    nov_df = gtf_df.loc[gtf_df.gene_id.isin(nov_gids)]
-    l1 = len(nov_df.index)
+    # nov_df = gtf_df.loc[gtf_df.gene_id.isin(nov_gids)]
+    # l1 = len(nov_df.index)
 
-    # use tid or gid based on tool
-    if tool == 'iq':
-        id_col = 'gene_id'
-    elif tool == 'flair':
-        id_col = 'gene_id'
-    elif tool == 'espresso':
-        id_col = 'transcript_id'
+    id_col = 'transcript_id'
+    # # use tid or gid based on tool
+    # if tool == 'iq':
+    #     id_col = 'gene_id'
+    # elif tool == 'flair':
+    #     id_col = 'transcript_id'
+    # elif tool == 'espresso':
+    #     id_col = 'transcript_id'
 
-    # merge w/ bed
-    df = pr.read_bed(bed)
-    nov_df = pr.PyRanges(nov_df)
-    nov_df = nov_df.join(df,
-                          how='left',
-                          strandedness='same',
-                          preserve_order=True)
+    # # merge w/ bed
+    # df = pr.read_bed(bed)
+    # nov_df = pr.PyRanges(nov_df)
+    # nov_df = nov_df.join(df,
+    #                       how='left',
+    #                       strandedness='same',
+    #                       preserve_order=True)
 
-    # sanity checks
-    nov_df = nov_df.df
-    l2 = len(nov_df.index)
-    assert l1 == l2
-    assert len(nov_df.loc[nov_df.Name.isnull()].index) == 0
+    # # sanity checks
+    # nov_df = nov_df.df
+    # l2 = len(nov_df.index)
+    # assert l1 == l2
+    # assert len(nov_df.loc[nov_df.Name.isnull()].index) == 0
 
 
     # get a dict to map sample-level novel gene ids to cross-sample novel gene ids
+    nov_df = pd.read_csv(id_map, sep='\t')
     id_dict = dict([(o,n) for o,n in zip(nov_df[id_col].tolist(),
-                                         nov_df['Name'].tolist())])
-    nov_df[[id_col, 'Name']].drop_duplicates().head()
+                                         nov_df['gene_id'].tolist())])
+    nov_ids = nov_df[id_col].tolist()
 
     # now update full gtf
-    nov_ids = nov_df[id_col].unique().tolist()
+    # nov_ids = nov_df[id_col].unique().tolist()
     inds = gtf_df.loc[gtf_df[id_col].isin(nov_ids)].index
     gtf_df.loc[inds, 'gene_id'] = gtf_df.loc[inds, id_col].map(id_dict)
 
@@ -132,7 +150,7 @@ def merge_beds(beds, bed):
         df = pd.concat([df, temp], axis=0)
     df = pr.PyRanges(df)
     df = df.merge(strand=True,
-              slack=0)
+                  slack=0)
 
     # assign each a random number
     df = df.df

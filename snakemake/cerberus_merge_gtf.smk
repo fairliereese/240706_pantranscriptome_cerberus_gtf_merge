@@ -68,6 +68,28 @@ def get_df_val(df, col, col2_val, col2='sample'):
     assert len(temp.index) == 1
     return temp[col].values[0]
 
+##########################
+####### Novel gene stuff
+##########################
+# give novel genes the same IDs across the different samples
+rule get_novel_gene_gtf:
+    input:
+        gtf = lambda wc: expand(input_gtf,
+                                lab_rep=get_df_val(df,
+                                'lab_rep',
+                                wc.tech_rep,
+                                'tech_rep'))[0]
+    params:
+        tool = tool
+    resources:
+        threads = 1,
+        nodes = 1
+    output:
+        # gtf = temporary(config['fmt']['novel_gene_gtf'])
+        gtf = config['fmt']['novel_gene_gtf']
+    run:
+        get_novel_gene_gtf(input.gtf, output.gtf, params.tool)
+
 # give novel genes the same IDs across the different samples
 rule get_novel_gene_bed:
     input:
@@ -86,24 +108,69 @@ rule get_novel_gene_bed:
     run:
         get_novel_gene_bed(input.gtf, output.bed, params.tool)
 
-# merge novel gene intervals across samples
-# and give them a unique number
-rule get_merged_novel_gene_bed:
+rule cat_novel_gene_gtfs:
     input:
-        beds = expand(rules.get_novel_gene_bed.output.bed,
-                     analysis=analysis,
-                     tech_rep=df.tech_rep.tolist())
+        gtfs = lambda wc: expand(rules.get_novel_gene_gtf.output.gtf,
+                                 analysis=wc.analysis,
+                                 tech_rep=df.tech_rep.tolist())
+    params:
+        cli_gtf = lambda wc: fmt_list_for_cli(expand(rules.get_novel_gene_gtf.output.gtf,
+                                 analysis=wc.analysis,
+                                 tech_rep=df.tech_rep.tolist()))
     resources:
         threads = 1,
-        nodes = 2
+        nodes = 1
     output:
-        bed = temporary(config['fmt']['novel_gene_merge_bed'])
+        gtf = temporary(config['fmt']['novel_gene_merge_gtf'])
+    shell:
+        """
+        cat {params.cli_gtf} > {output.gtf}
+        """
+
+# build loci using Julien's tool
+rule buildloci:
+    input:
+        gtf = rules.cat_novel_gene_gtfs.output.gtf
+    resources:
+        threads = 1,
+        nodes = 1
+    conda:
+        'base'
+    params:
+        buildLoci = config['software']['buildLoci'],
+        prefix = 'novel_gene'
+    output:
+        gtf = temporary(config['fmt']['novel_gene_merge_build_loci_gtf'])
+    shell:
+        """
+        module load bedtools
+        bedtools intersect \
+            -s \
+            -wao \
+            -a {input.gtf} \
+            -b {input.gtf} | \
+            {params.buildLoci} - \
+                locPrefix {params.prefix} \
+                > {output.gtf}
+        """
+
+rule get_novel_tid_gid:
+    input:
+        gtf = rules.buildloci.output.gtf
+    resources:
+        threads = 1,
+        nodes = 1
+    output:
+        tsv = config['fmt']['novel_gene_tid_to_gid']
     run:
-        merge_beds(list(input.beds), output.bed)
+        df = pr.read_gtf(input.gtf, as_df=True)
+        df = df[['transcript_id', 'gene_id']].drop_duplicates()
+        assert len(df.loc[df.transcript_id.duplicated(keep=False)].index) == 0
+        df.to_csv(output.tsv, sep='\t', index=False)
 
 rule fmt_novel_gene_rename:
     input:
-        bed = config['fmt']['novel_gene_merge_bed'],
+        tsv = rules.get_novel_tid_gid.output.tsv,
         gtf = lambda wc: expand(input_gtf,
                                 lab_rep=get_df_val(df,
                                 'lab_rep',
@@ -115,12 +182,50 @@ rule fmt_novel_gene_rename:
     params:
         tool = tool
     output:
-        gtf = temporary(config['fmt']['novel_gene_rename_gtf'])
+        # gtf = temporary(config['fmt']['novel_gene_rename_gtf'])
+        gtf = config['fmt']['novel_gene_rename_gtf']
+
     run:
         rename_novel_genes(input.gtf,
-                           input.bed,
+                           input.tsv,
                            output.gtf,
                            params.tool)
+
+# # merge novel gene intervals across samples
+# # and give them a unique number
+# rule get_merged_novel_gene_bed:
+#     input:
+#         beds = expand(rules.get_novel_gene_bed.output.bed,
+#                      analysis=analysis,
+#                      tech_rep=df.tech_rep.tolist())
+#     resources:
+#         threads = 1,
+#         nodes = 2
+#     output:
+#         bed = temporary(config['fmt']['novel_gene_merge_bed'])
+#     run:
+#         merge_beds(list(input.beds), output.bed)
+#
+# rule fmt_novel_gene_rename:
+#     input:
+#         bed = config['fmt']['novel_gene_merge_bed'],
+#         gtf = lambda wc: expand(input_gtf,
+#                                 lab_rep=get_df_val(df,
+#                                 'lab_rep',
+#                                 wc.tech_rep,
+#                                 'tech_rep'))[0]
+#     resources:
+#         threads = 1,
+#         nodes = 1
+#     params:
+#         tool = tool
+#     output:
+#         gtf = temporary(config['fmt']['novel_gene_rename_gtf'])
+#     run:
+#         rename_novel_genes(input.gtf,
+#                            input.bed,
+#                            output.gtf,
+#                            params.tool)
 
 # format the gtf corrrectly first
 rule fmt_gtf:
