@@ -44,6 +44,8 @@ def fmt_gtf(ifile, ref_file, ofile, tool):
     # limit to just transcripts and exons b/c we'll just
     # reconstruct the genes
     df = df.loc[df.Feature.isin(['transcript', 'exon'])]
+    df['gene_name'] = df['gene_id']
+    
     gtf_df = df.copy(deep=True)
 
     # flair -- rename antisense genes

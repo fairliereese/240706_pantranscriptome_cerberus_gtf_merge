@@ -46,10 +46,14 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(config['cerberus']['merge']['h5'],
-         analysis=analysis),
-        expand(config['cerberus']['merge']['gtf'],
+        expand(config['fmt']['gtf'],
+               tech_rep=df.tech_rep.tolist(),
                analysis=analysis)
+        # expand(config['cerberus']['merge']['h5'],
+        #  analysis=analysis),
+        # expand(config['cerberus']['merge']['gtf'],
+        #        analysis=analysis)
+
 
 
 
