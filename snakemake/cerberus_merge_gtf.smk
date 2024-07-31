@@ -38,6 +38,8 @@ input_gtf = config[analysis]['gtf']
 #                               'GM12878_1',
 #                               'GM22300_1'])]
 
+df = df.loc[df.tech_rep=='HG03732_1']
+
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
     lab_rep='|'.join([re.escape(x) for x in df.lab_rep.tolist()]),
@@ -46,9 +48,15 @@ wildcard_constraints:
 
 rule all:
     input:
-        expand(config['fmt']['gtf'],
+        expand(config['cerberus']['update']['gtf'],
                tech_rep=df.tech_rep.tolist(),
                analysis=analysis)
+
+        # expand(config['cerberus']['ends'],
+        #        tech_rep=df.tech_rep.tolist(),
+        #        end_mode=end_modes,
+        #        analysis=analysis)
+
         # expand(config['cerberus']['merge']['h5'],
         #  analysis=analysis),
         # expand(config['cerberus']['merge']['gtf'],
@@ -62,8 +70,8 @@ rule all:
         #        analysis=analysis)
 
         # config['cerberus']['ref']['h5']
-        # expand(config['cerberus']['agg']['ics']),
-        # expand(config['cerberus']['agg']['ends'],
+        # expand(config['cerberus']['ics']),
+        # expand(config['cerberus']['ends'],
         #        tech_rep=df.tech_rep.tolist(),
         #        end_mode=end_modes)
 
@@ -312,7 +320,9 @@ use rule gtf_to_ends as cerb_gtf_to_ends with:
         dist =  lambda wc: config['params']['cerberus'][wc.end_mode]['dist'],
         slack = lambda wc: config['params']['cerberus'][wc.end_mode]['slack']
     output:
-        bed = temporary(config['cerberus']['ends'])
+        # bed = temporary(config['cerberus']['ends'])
+        bed = config['cerberus']['ends']
+
 
 use rule agg_ends_cfg as cerb_agg_config with:
     input:
