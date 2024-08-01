@@ -38,7 +38,7 @@ input_gtf = config[analysis]['gtf']
 #                               'GM12878_1',
 #                               'GM22300_1'])]
 
-df = df.loc[df.tech_rep=='HG03732_1']
+# df = df.loc[df.tech_rep=='HG03732_1']
 
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
@@ -49,7 +49,7 @@ wildcard_constraints:
 rule all:
     input:
         expand(config['cerberus']['update']['gtf'],
-               tech_rep=df.tech_rep.tolist(),
+               tech_rep='HG03732_1',
                analysis=analysis)
 
         # expand(config['cerberus']['ends'],
