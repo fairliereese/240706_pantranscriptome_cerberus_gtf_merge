@@ -22,7 +22,6 @@ analysis = ['flair', 'iq', 'espresso']
 # df = df.loc[df.tech_rep=='HG03732_1']
 
 df = df.loc[df.tech_rep=='GM19117_1']
-analysis = ['flair']
 
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
@@ -177,7 +176,7 @@ rule fmt_gtf:
         'cerberus'
     shell:
         """
-        python snakemake/refmt_gtf.py \
+        python ../snakemake/refmt_gtf.py \
             {input.gtf} \
             {input.ref_gtf} \
             {output.gtf} \
