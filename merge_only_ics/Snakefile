@@ -3,6 +3,7 @@
 import pandas as pd
 import os
 import sys
+import pyranges as pr
 
 p = os.path.dirname(os.getcwd())+'/scripts/'
 sys.path.append(p)
@@ -101,10 +102,25 @@ rule cat_novel_gene_gtfs:
         cat {params.cli_gtf} > {output.gtf}
         """
 
+# remove gene entries because julien's tool doesn't like it
+rule rm_gtf_genes:
+    input:
+        gtf = rules.cat_novel_gene_gtfs.output.gtf
+    resources:
+        threads = 1,
+        nodes = 1
+    output:
+        gtf = temporary(config['fmt']['novel_gene_merge_gtf_no_genes'])
+    run:
+        temp = pr.read_gtf(input.gtf).df
+        temp = temp.loc[temp.Feature.isin('transcript', 'exon')]
+        temp = pr.PyRanges(temp)
+        temp.to_gtf(output.gtf)
+
 # build loci using Julien's tool
 rule buildloci:
     input:
-        gtf = rules.cat_novel_gene_gtfs.output.gtf
+        gtf = rules.rm_gtf_genes.output.gtf
     resources:
         threads = 1,
         nodes = 1
