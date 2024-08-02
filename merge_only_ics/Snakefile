@@ -55,7 +55,7 @@ rule get_novel_gene_gtf:
                                 {'tech_rep':
                                 wc.tech_rep}))[0]
     params:
-        tool = tool
+        tool = lambda wc: wc.analysis
     resources:
         threads = 1,
         nodes = 1
