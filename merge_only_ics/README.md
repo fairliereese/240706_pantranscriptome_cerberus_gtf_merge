@@ -16,5 +16,5 @@ snakemake \
     --time=4:00:00" \
     -n
 
-snakemake --dag | dot -Tpdf > dag.pdf
+snakemake --forceall --dag | dot -Tpdf > dag.pdf
 ```

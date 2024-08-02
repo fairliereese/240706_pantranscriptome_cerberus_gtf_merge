@@ -40,7 +40,6 @@ espresso:
 fmt:
   novel_gene_bed: data/{analysis}/fmt/{tech_rep}_novel_gene.bed
   novel_gene_gtf: data/{analysis}/fmt/{tech_rep}_novel_gene.gtf
-  novel_gene_merge_gtf: data/{analysis}/fmt/novel_gene_merged.gtf
   novel_gene_merge_gtf: data/fmt/novel_gene_merged.gtf
   novel_gene_merge_build_loci_gtf: data/fmt/novel_gene_build_loci_merged.gtf
 
