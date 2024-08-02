@@ -31,7 +31,6 @@ wildcard_constraints:
 
 
 def get_df_val(df, col1, col_dict):
-    import pdb; pdb.set_trace()
     temp = df.copy(deep=True)
 
     for key, item in col_dict.items():
@@ -53,7 +52,7 @@ rule all:
 # give novel genes the same IDs across the different samples
 rule get_novel_gene_gtf:
     input:
-        gtf = lambda wc: expand(config[wc.analysis],
+        gtf = lambda wc: expand(config[wc.analysis]['gtf'],
                                 lab_rep=get_df_val(df,
                                 'lab_rep',
                                 {'tech_rep':
