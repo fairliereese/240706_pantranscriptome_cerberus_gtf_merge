@@ -71,11 +71,7 @@ rule get_novel_gene_gtf:
 # give novel genes the same IDs across the different samples
 rule get_novel_gene_bed:
     input:
-        gtf = lambda wc: expand(config[wc.analysis],
-                                lab_rep=get_df_val(df,
-                                'lab_rep',
-                                {'tech_rep':
-                                wc.tech_rep}))[0]
+        gtf = rules.get_novel_gene_gtf.input.gtf
     params:
         tool = lambda wc: wc.analysis
     resources:
@@ -149,11 +145,7 @@ rule get_novel_tid_gid:
 rule fmt_novel_gene_rename:
     input:
         tsv = rules.get_novel_tid_gid.output.tsv,
-        gtf = lambda wc: expand(config[wc.analysis],
-                                lab_rep=get_df_val(df,
-                                'lab_rep',
-                                {'tech_rep':
-                                wc.tech_rep}))[0]
+        gtf = rules.get_novel_gene_gtf.input.gtf
     resources:
         threads = 1,
         nodes = 1
