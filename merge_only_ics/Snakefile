@@ -41,7 +41,7 @@ def get_df_val(df, col1, col_dict):
 
 rule all:
     input:
-        config['fmt']['novel_gene_merge_build_loci_gtf']
+        config['fmt']['novel_gene_tid_to_gid']
         # expand(config['fmt']['gtf'],
         #        tech_rep=df.tech_rep.tolist(),
         #        analysis=analysis)
