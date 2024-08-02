@@ -113,7 +113,7 @@ rule rm_gtf_genes:
         gtf = temporary(config['fmt']['novel_gene_merge_gtf_no_genes'])
     run:
         temp = pr.read_gtf(input.gtf).df
-        temp = temp.loc[temp.Feature.isin('transcript', 'exon')]
+        temp = temp.loc[temp.Feature.isin(['transcript', 'exon'])]
         temp = pr.PyRanges(temp)
         temp.to_gtf(output.gtf)
 
