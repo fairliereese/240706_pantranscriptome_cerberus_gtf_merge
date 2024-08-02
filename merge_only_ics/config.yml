@@ -1,0 +1,73 @@
+ref:
+  gtf: /gpfs/projects/bsc83/Data/gene_annotations/gencode/v47/gencode.v47.primary_assembly.annotation.gtf
+  gtf_ver: 47
+
+  cerberus:
+      ics: ref/cerberus/ics.tsv
+      ends: ref/cerberus/{end_mode}.bed
+      ref:
+        annot_h5: ref/{analysis}/cerberus/ref/ref.h5
+      update:
+        gtf: ref/{analysis}/cerberus/update/ref.gtf
+
+meta:
+  # sample: /gpfs/projects/bsc83/Projects/pantranscriptome/pclavell/00_metadata/{analysis}/pantranscriptome_samples_metadata.tsv
+  sample: ref/pantranscriptome_samples_metadata.tsv
+  library: snakemake/config.tsv
+
+
+params:
+  cerberus:
+    tss:
+      dist: 25 # extension distance
+      slack: 0
+      agg_slack: 20
+    tes:
+      dist: 10 # extension dist
+      slack: 0
+      agg_slack: 20
+
+# isoquant
+iq:
+  gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/isoquant/{lab_rep}.transcript_models.gtf
+
+flair:
+  gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/flair/{lab_rep}.isoforms.gtf
+
+espresso:
+  gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/espresso/{lab_rep}_espresso.gtf
+
+fmt:
+  novel_gene_bed: data/{analysis}/fmt/{tech_rep}_novel_gene.bed
+  novel_gene_gtf: data/{analysis}/fmt/{tech_rep}_novel_gene.gtf
+  novel_gene_merge_gtf: data/{analysis}/fmt/novel_gene_merged.gtf
+  novel_gene_merge_gtf: data/{analysis}/fmt/novel_gene_merged.gtf
+  novel_gene_merge_build_loci_gtf: data/{analysis}/fmt/novel_gene_build_loci_merged.gtf
+
+  novel_gene_tid_to_gid: data/{analysis}/fmt/novel_gene_tid_to_gid.tsv
+
+  novel_gene_merge_bed: data/{analysis}/fmt/novel_gene_merged.bed
+  novel_gene_rename_gtf: data/{analysis}/fmt/{tech_rep}_novel_gene_rename.gtf
+  gtf: data/{analysis}/fmt/{tech_rep}.gtf
+
+cerberus:
+  ics: data/{analysis}/cerb/{tech_rep}_ics.tsv
+  ends: data/{analysis}/cerb/{tech_rep}_{end_mode}.bed
+  agg:
+      ics_cfg: data/{analysis}/cerb/agg/agg_ic_cfg.csv
+      ics: data/{analysis}/cerb/agg/agg_ics.tsv
+      ends_cfg: data/{analysis}/cerb/agg/agg_{end_mode}_cfg.csv
+      ends: data/{analysis}/cerb/agg/agg_{end_mode}.bed
+  ref:
+      h5: data/{analysis}/cerb/ref/ref.h5
+      annot_h5: data/{analysis}/cerb/ref/{tech_rep}.h5
+  update:
+      gtf: data/{analysis}/cerb/update/{tech_rep}.gtf
+  merge:
+      cfg: data/{analysis}/cerb/update/cfg.tsv
+      gtf: data/{analysis}/cerb/update/merged.gtf
+      cfg_h5: data/{analysis}/cerb/update/cfg_h5.tsv
+      h5: data/{analysis}/cerb/update/merged.h5
+
+software:
+  buildLoci: /gpfs/home/bsc/bsc083001/mele_lab/bin/buildLoci/buildLoci.pl
