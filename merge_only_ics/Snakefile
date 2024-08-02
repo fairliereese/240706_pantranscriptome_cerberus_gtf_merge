@@ -11,8 +11,8 @@ from sm_utils import *
 
 include: '../snakemake/cerberus.smk'
 
-configfile: 'merge_only_ics/config.yml'
-config_tsv = f'merge_only_ics/config.tsv'
+configfile: 'config.yml'
+config_tsv = 'config.tsv'
 df = parse_config(config_tsv)
 analysis = ['flair', 'iq', 'e']
 # df = df.loc[df.tech_rep.isin(['GM10493_1',
