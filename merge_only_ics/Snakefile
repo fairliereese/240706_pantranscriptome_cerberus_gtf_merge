@@ -74,7 +74,7 @@ rule get_novel_gene_bed:
                                 {'tech_rep':
                                 wc.tech_rep}))[0]
     params:
-        tool = tool
+        tool = lambda wc: wc.analysis
     resources:
         threads = 1,
         nodes = 1
@@ -155,7 +155,7 @@ rule fmt_novel_gene_rename:
         threads = 1,
         nodes = 1
     params:
-        tool = tool
+        tool = lambda wc: wc.analysis
     output:
         # gtf = temporary(config['fmt']['novel_gene_rename_gtf'])
         gtf = config['fmt']['novel_gene_rename_gtf']
@@ -175,7 +175,7 @@ rule fmt_gtf:
         threads = 1,
         nodes = 2
     params:
-        tool = tool
+        tool = lambda wc: wc.analysis
     output:
         gtf = config['fmt']['gtf']
     conda:
