@@ -41,9 +41,10 @@ def get_df_val(df, col1, col_dict):
 
 rule all:
     input:
-        expand(config['fmt']['gtf'],
-               tech_rep=df.tech_rep.tolist(),
-               analysis=analysis)
+        config['fmt']['novel_gene_merge_build_loci_gtf']
+        # expand(config['fmt']['gtf'],
+        #        tech_rep=df.tech_rep.tolist(),
+        #        analysis=analysis)
 
 ##########################
 ####### Novel gene stuff
@@ -113,7 +114,8 @@ rule buildloci:
         buildLoci = config['software']['buildLoci'],
         prefix = 'novel_gene'
     output:
-        gtf = temporary(config['fmt']['novel_gene_merge_build_loci_gtf'])
+        # gtf = temporary(config['fmt']['novel_gene_merge_build_loci_gtf'])
+        gtf = config['fmt']['novel_gene_merge_build_loci_gtf']
     shell:
         """
         module load bedtools

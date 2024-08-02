@@ -15,4 +15,6 @@ snakemake \
     --mail-type=START,END,FAIL \
     --time=4:00:00" \
     -n
+
+snakemake --dag | dot -Tpdf > dag.pdf
 ```
