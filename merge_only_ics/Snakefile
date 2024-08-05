@@ -42,10 +42,10 @@ def get_df_val(df, col1, col_dict):
 
 rule all:
     input:
-        config['fmt']['novel_gene_tid_to_gid']
-        # expand(config['fmt']['gtf'],
-        #        tech_rep=df.tech_rep.tolist(),
-        #        analysis=analysis)
+        expand(config['fmt']['gtf'],
+               tech_rep=df.tech_rep.tolist(),
+               analysis=analysis)
+        # config['fmt']['novel_gene_tid_to_gid']
 
 ##########################
 ####### Novel gene stuff
@@ -156,6 +156,7 @@ rule get_novel_tid_gid:
     run:
         df = pr.read_gtf(input.gtf, as_df=True)
         df = df[['transcript_id', 'gene_id']].drop_duplicates()
+        # ensure we don't have any dupe transcript ids
         assert len(df.loc[df.transcript_id.duplicated(keep=False)].index) == 0
         df.to_csv(output.tsv, sep='\t', index=False)
 
