@@ -22,7 +22,7 @@ analysis = ['flair', 'iq', 'espresso']
 
 # df = df.loc[df.tech_rep=='HG03732_1']
 
-df = df.loc[df.tech_rep=='GM19117_1']
+# df = df.loc[df.tech_rep=='GM19117_1']
 
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
