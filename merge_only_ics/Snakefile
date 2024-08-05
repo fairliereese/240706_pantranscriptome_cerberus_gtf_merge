@@ -42,7 +42,7 @@ def get_df_val(df, col1, col_dict):
 
 rule all:
     input:
-        config['cerberus']['agg']['ics_cfg']
+        config['cerberus']['agg']['ics']
         # expand(config['fmt']['gtf'],
         #        tech_rep=df.tech_rep.tolist(),
         #        analysis=analysis)
