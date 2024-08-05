@@ -42,9 +42,10 @@ def get_df_val(df, col1, col_dict):
 
 rule all:
     input:
-        expand(config['fmt']['gtf'],
-               tech_rep=df.tech_rep.tolist(),
-               analysis=analysis)
+        config['cerberus']['agg']['ics_cfg']
+        # expand(config['fmt']['gtf'],
+        #        tech_rep=df.tech_rep.tolist(),
+        #        analysis=analysis)
         # config['fmt']['novel_gene_tid_to_gid']
 
 ##########################
