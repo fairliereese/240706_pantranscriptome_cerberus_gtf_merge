@@ -45,7 +45,7 @@ def fmt_gtf(ifile, ref_file, ofile, tool):
     # reconstruct the genes
     df = df.loc[df.Feature.isin(['transcript', 'exon'])]
     df['gene_name'] = df['gene_id']
-    
+
     gtf_df = df.copy(deep=True)
 
     # flair -- rename antisense genes
@@ -55,6 +55,13 @@ def fmt_gtf(ifile, ref_file, ofile, tool):
         # get strand, gene id, and transcript id of flair transcripts
         df = df[['gene_id', 'transcript_id', 'Strand']].drop_duplicates()
         df['gid_stable'] = cerberus.get_stable_gid(df, 'gene_id')
+
+        #  error check to prevent buildLoci errors
+        temp = df[['gene_id', 'Strand']].drop_duplicates()
+        temp = temp.loc[temp.gene_id.duplicated(keep=False)]
+        temp = temp.loc[temp.gene_id.str.startswith('LOC')]
+        if len(temp.index) != 0:
+            raise ValueError('Found buildLoci locations w/ + and - strand')
 
         # get strand and gene id for reference
         ref_df = ref_df[['gene_id', 'Strand']].drop_duplicates()
@@ -69,10 +76,12 @@ def fmt_gtf(ifile, ref_file, ofile, tool):
         # limit to things on the opposite strand as ref
         # and known things
         # and replace gene id for those
+        # import pdb; pdb.set_trace()
         temp = df.loc[(df.Strand!=df.Strand_ref)&\
                       (df.Strand_ref.notnull())]
         tids = temp.transcript_id.unique().tolist()
         inds = gtf_df.loc[gtf_df.transcript_id.isin(tids)].index
+
         gtf_df.loc[inds, 'gene_id'] = gtf_df.loc[inds, 'gene_id']+'_antisense'
 
         l1 = len(gtf_df.gene_id.unique())

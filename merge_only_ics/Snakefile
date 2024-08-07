@@ -42,7 +42,9 @@ def get_df_val(df, col1, col_dict):
 
 rule all:
     input:
-        config['cerberus']['agg']['ics']
+        config['cerberus']['agg']['ics'],
+        # expand(config['cerberus']['agg']['ends'],
+        #        end_mode=df.end_modes)
         # expand(config['fmt']['gtf'],
         #        tech_rep=df.tech_rep.tolist(),
         #        analysis=analysis)
@@ -132,7 +134,9 @@ rule buildloci:
         prefix = 'novel_gene'
     output:
         # gtf = temporary(config['fmt']['novel_gene_merge_build_loci_gtf'])
-        gtf = config['fmt']['novel_gene_merge_build_loci_gtf']
+        gtf = config['fmt']['novel_gene_merge_build_loci_gtf'],
+        bed = config['fmt']['novel_gene_merge_build_loci_bed']
+
     shell:
         """
         module load bedtools
@@ -140,7 +144,9 @@ rule buildloci:
             -s \
             -wao \
             -a {input.gtf} \
-            -b {input.gtf} | \
+            -b {input.gtf} > {output.bed}
+
+        cat {output.bed} | \
             {params.buildLoci} - \
                 locPrefix {params.prefix} \
                 > {output.gtf}
