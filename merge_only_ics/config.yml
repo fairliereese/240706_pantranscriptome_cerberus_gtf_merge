@@ -49,6 +49,9 @@ fmt:
   novel_gene_rename_gtf: data/{analysis}/fmt/{tech_rep}_novel_gene_rename.gtf
   gtf: data/{analysis}/fmt/{tech_rep}.gtf
 
+ic_gtf:
+  ics: data/{analysis}/ics_only/{tech_rep}_ics.tsv
+
 cerberus:
   ics: data/{analysis}/cerb/{tech_rep}_ics.tsv
   ends: data/{analysis}/cerb/{tech_rep}_{end_mode}.bed
