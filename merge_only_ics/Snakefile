@@ -42,9 +42,7 @@ def get_df_val(df, col1, col_dict):
 
 rule all:
     input:
-        expand(config['ic_gtf']['ics'],
-               tech_rep=df.tech_rep.tolist(),
-               analysis=analysis)
+        config['ic_gtf']['gtf']
         # config['cerberus']['agg']['ics'],
         # expand(config['cerberus']['agg']['ends'],
         #        end_mode=df.end_modes)
@@ -54,29 +52,35 @@ rule all:
 
 
 # really bare bones approach
-rule get_ics:
+rule cfg_merged_gtf:
     input:
-        gtf = lambda wc: expand(config[wc.analysis]['gtf'],
-                                lab_rep=get_df_val(df,
-                                'lab_rep',
-                                {'tech_rep':
-                                wc.tech_rep}))[0]
+        gtfs = lambda wc: expand(rules.get_novel_gene_gtf.output.gtf,
+                                 analysis=analysis,
+                                 tech_rep=df.tech_rep.tolist())
     resources:
         threads = 1,
         nodes = 1
-    conda:
-        'cerberus'
     output:
-        ics =
+        cfg = config['ic_gtf']['cfg']
     run:
-        import cerberus
-        import pyranges as pr
-        # get unique intron chains from gtf
-        df = pr.read_gtf(input.gtf, rename_attr=True, duplicate_attr=True)
-        df = df.df
-        df = pr.PyRanges(df)
-        df = cerberus.get_ic(df)
-        df.to_csv(output.ics)
+        gtfs = list(input.gtfs)
+        df = pd.DataFrame()
+        df['gtf'] = gtfs
+        df.to_csv(output.cfg, index=False)
+
+rule get_merged_gtf:
+    input:
+        gtfs = rules.cfg_merged_gtf.input.gtfs,
+        cfg = rules.cfg_merged_gtf.output.cfg
+    resources:
+        threads = 1,
+        nodes = 2
+    output:
+        gtf = config['ic_gtf']['gtf']
+    shell:
+        """
+        python make_ic_gtf.py {input.cfg} {output.gtf}
+        """
 
 
 # ##########################

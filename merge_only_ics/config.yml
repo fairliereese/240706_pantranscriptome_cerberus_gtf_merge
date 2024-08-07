@@ -50,7 +50,9 @@ fmt:
   gtf: data/{analysis}/fmt/{tech_rep}.gtf
 
 ic_gtf:
-  ics: data/{analysis}/ics_only/{tech_rep}_ics.tsv
+  cfg: data/ics_only/{tech_rep}_ics.tsv
+  gtf: data/ics_only/merged.gtf
+  # ics: data/{analysis}/ics_only/{tech_rep}_ics.tsv
 
 cerberus:
   ics: data/{analysis}/cerb/{tech_rep}_ics.tsv
