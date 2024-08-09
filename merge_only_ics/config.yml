@@ -37,6 +37,9 @@ flair:
 espresso:
   gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/espresso/{lab_rep}_espresso.gtf
 
+raw:
+  gtf: data/{analysis}/raw/{tech_rep}.gtf
+
 fmt:
   novel_gene_bed: data/{analysis}/fmt/{tech_rep}_novel_gene.bed
   novel_gene_gtf: data/{analysis}/fmt/{tech_rep}_novel_gene.gtf
@@ -50,7 +53,7 @@ fmt:
   gtf: data/{analysis}/fmt/{tech_rep}.gtf
 
 ic_gtf:
-  cfg: data/ics_only/{tech_rep}_ics.tsv
+  cfg: data/ics_only/cfg.txt
   gtf: data/ics_only/merged.gtf
   # ics: data/{analysis}/ics_only/{tech_rep}_ics.tsv
 

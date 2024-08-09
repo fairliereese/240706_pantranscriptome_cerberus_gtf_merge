@@ -18,11 +18,9 @@ df = parse_config(config_tsv)
 analysis = ['flair', 'iq', 'espresso']
 # df = df.loc[df.tech_rep.isin(['GM10493_1',
 #                               'GM12878_1',
-#                               'GM22300_1'])]
+#                               'GM22300_1',
+#                               'GM19117_1'])]
 
-# df = df.loc[df.tech_rep=='HG03732_1']
-
-# df = df.loc[df.tech_rep=='GM19117_1']
 
 wildcard_constraints:
     tech_rep='|'.join([re.escape(x) for x in df.tech_rep.tolist()]),
@@ -52,11 +50,28 @@ rule all:
 
 
 # really bare bones approach
+rule symlink:
+    input:
+        gtf = lambda wc: expand(config[wc.analysis]['gtf'],
+                                lab_rep=get_df_val(df,
+                                'lab_rep',
+                                {'tech_rep':
+                                wc.tech_rep}))[0]
+    resources:
+        threads = 1,
+        nodes = 1
+    output:
+        gtf = config['raw']['gtf']
+    shell:
+        """
+        ln -s {input.gtf} {output.gtf}
+        """
+
 rule cfg_merged_gtf:
     input:
-        gtfs = lambda wc: expand(rules.get_novel_gene_gtf.output.gtf,
-                                 analysis=analysis,
-                                 tech_rep=df.tech_rep.tolist())
+        gtfs = lambda wc: expand(rules.symlink.output.gtf,
+                         analysis=analysis,
+                         tech_rep=df.tech_rep.tolist())
     resources:
         threads = 1,
         nodes = 1
@@ -74,7 +89,9 @@ rule get_merged_gtf:
         cfg = rules.cfg_merged_gtf.output.cfg
     resources:
         threads = 1,
-        nodes = 2
+        nodes = 1
+    conda:
+        'cerberus'
     output:
         gtf = config['ic_gtf']['gtf']
     shell:
