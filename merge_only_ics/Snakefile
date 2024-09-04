@@ -56,22 +56,22 @@ rule all:
 
 
 # really bare bones approach
-# rule symlink:
-#     input:
-#         gtf = lambda wc: expand(config[wc.analysis]['gtf'],
-#                                 lab_rep=get_df_val(df,
-#                                 'lab_rep',
-#                                 {'tech_rep':
-#                                 wc.tech_rep}))[0]
-#     resources:
-#         threads = 1,
-#         nodes = 1
-#     output:
-#         gtf = config['raw']['gtf']
-#     shell:
-#         """
-#         ln -s {input.gtf} {output.gtf}
-#         """
+rule symlink:
+    input:
+        gtf = lambda wc: expand(config[wc.analysis]['gtf'],
+                                lab_rep=get_df_val(df,
+                                'lab_rep',
+                                {'tech_rep':
+                                wc.tech_rep}))[0]
+    resources:
+        threads = 1,
+        nodes = 1
+    output:
+        gtf = config['raw']['gtf']
+    shell:
+        """
+        ln -s {input.gtf} {output.gtf}
+        """
 
 rule cfg_merged_gtf:
     input:

@@ -28,7 +28,8 @@ params:
       agg_slack: 20
 
 lyric:
-  gtf:
+  gff: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/lyric/2samplesmissing/{lab_rep}.HiSS.tmerge.min2reads.splicing_status-all.endSupport-all.gff.gz
+  gtf: /gpfs/home/bsc/bsc083001/mele_lab/projects/240706_pantranscriptome_cerberus_gtf_merge/merge_only_ics/data/lyric/raw_not_symlink/{lab_rep}.gtf
 
 iq:
   gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/isoquant/{lab_rep}.transcript_models.gtf
