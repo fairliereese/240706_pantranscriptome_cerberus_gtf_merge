@@ -15,7 +15,9 @@ include: '../snakemake/cerberus.smk'
 configfile: 'config.yml'
 config_tsv = 'config.tsv'
 df = parse_config(config_tsv)
-analysis = ['flair', 'iq', 'espresso']
+analysis = ['flair', 'iq', 'espresso', 'lyric']
+# analysis = ['flair', 'iq', 'espresso']
+
 # df = df.loc[df.tech_rep.isin(['GM10493_1',
 #                               'GM12878_1',
 #                               'GM22300_1',
@@ -40,7 +42,11 @@ def get_df_val(df, col1, col_dict):
 
 rule all:
     input:
-        config['ic_gtf']['gtf']
+        expand(config['raw']['gtf'],
+               analysis=analysis,
+               tech_rep=df.tech_rep.tolist())
+        # config['ic_gtf']['gtf']
+
         # config['cerberus']['agg']['ics'],
         # expand(config['cerberus']['agg']['ends'],
         #        end_mode=df.end_modes)
@@ -69,7 +75,7 @@ rule symlink:
 
 rule cfg_merged_gtf:
     input:
-        gtfs = lambda wc: expand(rules.symlink.output.gtf,
+        gtfs = lambda wc: expand(config['raw']['gtf'],
                          analysis=analysis,
                          tech_rep=df.tech_rep.tolist())
     resources:

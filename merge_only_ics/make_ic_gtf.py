@@ -3,42 +3,80 @@ import pyranges as pr
 import pandas as pd
 import argparse
 
-def process_table_to_gtf_df(df):
+
+def df_to_gtf(df):
     gtf_entries = []
 
     for index, row in df.iterrows():
-        chrom = row['Chromosome']
+        chromosome = row['Chromosome']
         strand = row['Strand']
-        ic_list = list(map(int, row['ic'].split('-')))
-        tss = int(row['tss'])
-        tes = int(row['tes'])
+        ic_coords = list(map(int, row['ic'].split('-')))
+        tss = row['tss']
+        tes = row['tes']
         source = row['source']
-        gene_id = f"gene_{index}"
-        transcript_id = f"transcript_{index}"
+        samples = source.split(',')
 
-        # Define exons based on strand
+        # change tss and tes depending on strand to combat
+        # off by one errors
         if strand == '+':
-            exon_coords = [(tss, ic_list[0])]  # First exon
-            for i in range(1, len(ic_list) - 1, 2):
-                exon_coords.append((ic_list[i], ic_list[i + 1]))  # Middle exons
-            exon_coords.append((ic_list[-1], tes))  # Last exon
-        else:  # Reverse strand '-'
-            exon_coords = [(tes, ic_list[-1])]  # First exon (on reverse strand)
-            for i in range(len(ic_list) - 2, 0, -2):
-                exon_coords.append((ic_list[i + 1], ic_list[i]))  # Middle exons
-            exon_coords.append((ic_list[0], tss))  # Last exon (on reverse strand)
+            tes += 1
+        elif strand == '-':
+            tss -= 1
 
-        # Ensure each exon has start < end and create GTF entries
-        for i, (start, end) in enumerate(exon_coords):
-            start, end = min(start, end), max(start, end)
-            attributes = f'gene_id "{gene_id}"; transcript_id "{transcript_id}"; exon_number "{i+1}";'
-            gtf_entries.append([chrom, source, 'exon', start, end, '.', strand, '.', attributes])
+        # Ensure Start < End
+        if tss > tes:
+            tss, tes = tes, tss
 
-    # Convert the list of GTF entries to a DataFrame
-    gtf_df = pd.DataFrame(gtf_entries, columns=['Chromosome', 'Source', 'Feature', 'Start', 'End', 'Score', 'Strand', 'Frame', 'Attributes'])
+        # Create transcript entry
+        transcript_id = f"transcript_{index}"
+        gtf_entries.append({
+            'Chromosome': chromosome,
+            'Source': 'ChatGPT',
+            'Feature': 'transcript',
+            'Start': tss,
+            'End': tes,
+            'Score': '.',
+            'Strand': strand,
+            'Frame': '.',
+            'transcript_id': transcript_id,
+            'samples': ','.join(samples)
+        })
+
+        # Generate exon entries
+        exons = []
+        if strand == '+':
+            # For forward strand genes
+            coords = [tss] + ic_coords + [tes]
+            exons = [(coords[i], coords[i + 1]) for i in range(0,len(coords) - 1,2)]
+        else:
+            # For reverse strand genes
+            coords = [tss] + ic_coords[::-1] + [tes]
+            exons = [(coords[i], coords[i + 1]) for i in range(0,len(coords) - 1,2)][::-1]
+
+        # Add exon entries
+        for i, (start, end) in enumerate(exons):
+            if start > end:
+                start, end = end, start
+            gtf_entries.append({
+                'Chromosome': chromosome,
+                'Source': 'ChatGPT',
+                'Feature': 'exon',
+                'Start': start,
+                'End': end,
+                'Score': '.',
+                'Strand': strand,
+                'Frame': '.',
+                'transcript_id': transcript_id,
+                'exon_number': i + 1,
+                'samples': ','.join(samples)
+            })
+
+    # Convert the list of entries to a DataFrame
+    gtf_df = pd.DataFrame(gtf_entries, columns=[
+        'Chromosome', 'Source', 'Feature', 'Start', 'End', 'Score', 'Strand', 'Frame', 'transcript_id', 'exon_number', 'samples'
+    ])
 
     return gtf_df
-
 
 def make_ic(gtf_files):
 
@@ -113,7 +151,7 @@ def main():
 
     # Process the GTF file
     df = make_ic(gtfs)
-    df = process_table_to_gtf_df(df)
+    df = df_to_gtf(df)
 
     df = pr.PyRanges(df)
     df.to_gtf(args.output_ics)

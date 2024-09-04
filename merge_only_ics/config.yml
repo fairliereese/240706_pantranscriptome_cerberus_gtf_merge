@@ -27,7 +27,9 @@ params:
       slack: 0
       agg_slack: 20
 
-# isoquant
+lyric:
+  gtf:
+
 iq:
   gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/isoquant/{lab_rep}.transcript_models.gtf
 
