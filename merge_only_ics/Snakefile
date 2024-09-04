@@ -16,6 +16,7 @@ configfile: 'config.yml'
 config_tsv = 'config.tsv'
 df = parse_config(config_tsv)
 analysis = ['flair', 'iq', 'espresso', 'lyric']
+# analysis = ['lyric']
 # analysis = ['flair', 'iq', 'espresso']
 
 # df = df.loc[df.tech_rep.isin(['GM10493_1',
@@ -42,10 +43,7 @@ def get_df_val(df, col1, col_dict):
 
 rule all:
     input:
-        expand(config['raw']['gtf'],
-               analysis=analysis,
-               tech_rep=df.tech_rep.tolist())
-        # config['ic_gtf']['gtf']
+        config['ic_gtf']['gtf']
 
         # config['cerberus']['agg']['ics'],
         # expand(config['cerberus']['agg']['ends'],
@@ -55,23 +53,23 @@ rule all:
 
 
 
-# really bare bones approach
-rule symlink:
-    input:
-        gtf = lambda wc: expand(config[wc.analysis]['gtf'],
-                                lab_rep=get_df_val(df,
-                                'lab_rep',
-                                {'tech_rep':
-                                wc.tech_rep}))[0]
-    resources:
-        threads = 1,
-        nodes = 1
-    output:
-        gtf = config['raw']['gtf']
-    shell:
-        """
-        ln -s {input.gtf} {output.gtf}
-        """
+# # really bare bones approach
+# rule symlink:
+#     input:
+#         gtf = lambda wc: expand(config[wc.analysis]['gtf'],
+#                                 lab_rep=get_df_val(df,
+#                                 'lab_rep',
+#                                 {'tech_rep':
+#                                 wc.tech_rep}))[0]
+#     resources:
+#         threads = 1,
+#         nodes = 1
+#     output:
+#         gtf = config['raw']['gtf']
+#     shell:
+#         """
+#         ln -s {input.gtf} {output.gtf}
+#         """
 
 rule cfg_merged_gtf:
     input:
