@@ -109,8 +109,11 @@ def make_ic(gtf_files):
         # merge to get starts for each sample-level thing
         tss_df = gtf_df.features.tss().df
         tes_df = gtf_df.features.tes().df
-
-        tss_df = tss_df[['transcript_id', 'Start']].rename({'Start':'tss'}, axis=1)
+        try:
+            tss_df = tss_df[['transcript_id', 'Start']].rename({'Start':'tss'}, axis=1)
+        except:
+            print(f)
+            return
         tes_df = tes_df[['transcript_id', 'Start']].rename({'Start':'tes'}, axis=1)
 
         df = df[gb_cols+['transcript_id']]
