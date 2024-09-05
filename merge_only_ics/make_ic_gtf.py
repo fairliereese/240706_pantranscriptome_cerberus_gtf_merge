@@ -107,6 +107,7 @@ def make_ic(gtf_files):
         source_ic_df = source_ic_df.groupby(gb_cols, observed=True).agg({'source': ','.join}).reset_index()
 
         # if there are no transcripts, have to get tss / tes differently
+        # looking at you lyric
         if 'transcript' not in df.Feature.unique().tolist():
             fwd, rev = cerberus.get_stranded_gtf_dfs(df)
             tss_df = pd.DataFrame()
@@ -146,8 +147,8 @@ def make_ic(gtf_files):
             tss_df = gtf_df.features.tss().df
             tes_df = gtf_df.features.tes().df
 
-            tss_df = tss_df[['transcript_id', 'Start']].rename({'Start':'tss'}, axis=1)
-            tes_df = tes_df[['transcript_id', 'Start']].rename({'Start':'tes'}, axis=1)
+        tss_df = tss_df[['transcript_id', 'Start']].rename({'Start':'tss'}, axis=1)
+        tes_df = tes_df[['transcript_id', 'Start']].rename({'Start':'tes'}, axis=1)
 
         df = df[gb_cols+['transcript_id']]
         df = df.merge(tss_df, how='left', on='transcript_id')
