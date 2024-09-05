@@ -106,15 +106,48 @@ def make_ic(gtf_files):
                                  axis=0)
         source_ic_df = source_ic_df.groupby(gb_cols, observed=True).agg({'source': ','.join}).reset_index()
 
-        # merge to get starts for each sample-level thing
-        tss_df = gtf_df.features.tss().df
-        tes_df = gtf_df.features.tes().df
-        try:
+        # if there are no transcripts, have to get tss / tes differently
+        if 'transcript' not in df.Feature.unique().tolist():
+            fwd, rev = cerberus.get_stranded_gtf_dfs(df)
+            tss_df = pd.DataFrame()
+            tes_df = pd.DataFrame()
+            for strand, strand_df in zip(['+', '-'], [fwd,rev]):
+                strand_df['max_coord'] = strand_df[['Start', 'End']].max(axis=1)
+                strand_df['min_coord'] = strand_df[['Start', 'End']].min(axis=1)
+                strand_df = strand_df[['transcript_id',
+                                       'min_coord',
+                                       'max_coord']].groupby('transcript_id').agg(
+                                           {'min_coord': min,
+                                            'max_coord': max})
+                if strand == '-':
+                    strand_df['tss_end'] = strand_df['max_coord']
+                    strand_df['tss_end'] = strand_df['max_coord']-1
+                    strand_df['tes_start'] = strand_df['min_coord']
+                    strand_df['tes_end'] = strand_df['tes_start']+1
+                elif strand == '+':
+                    strand_df['tss_end'] = strand_df['min_coord']
+                    strand_df['tss_end'] = strand_df['min_coord'] + 1
+                    strand_df['tes_start'] = strand_df['max_coord'] - 1
+                    strand_df['tes_end'] = strand_df['max_coord']
+                tss_df = pd.concat([tss_df,
+                            strand_df['transcript_id', 'tss_start', 'tss_end']],
+                            axis=0)
+                tes_df = pd.concat([tes_df,
+                            strand_df['transcript_id', 'tes_start', 'tes_end']],
+                            axis=0)
+                tss_df.rename({'tss_start': 'Start',
+                               'tss_end': 'End'},
+                              axis=1, inplace=True)
+                tes_df.rename({'tes_start': 'Start',
+                               'tes_end': 'End'},
+                              axis=1, inplace=True)
+        else:
+            # merge to get starts for each sample-level thing
+            tss_df = gtf_df.features.tss().df
+            tes_df = gtf_df.features.tes().df
+
             tss_df = tss_df[['transcript_id', 'Start']].rename({'Start':'tss'}, axis=1)
-        except:
-            print(f)
-            return
-        tes_df = tes_df[['transcript_id', 'Start']].rename({'Start':'tes'}, axis=1)
+            tes_df = tes_df[['transcript_id', 'Start']].rename({'Start':'tes'}, axis=1)
 
         df = df[gb_cols+['transcript_id']]
         df = df.merge(tss_df, how='left', on='transcript_id')
