@@ -93,7 +93,7 @@ rule get_merged_gtf:
         cfg = rules.cfg_merged_gtf.output.cfg
     resources:
         threads = 1,
-        nodes = 1
+        nodes = 6
     conda:
         'cerberus'
     output:
