@@ -3,7 +3,6 @@ import pyranges as pr
 import pandas as pd
 import argparse
 
-
 def df_to_gtf(df):
     gtf_entries = []
 
@@ -21,7 +20,7 @@ def df_to_gtf(df):
         if strand == '+':
             tes += 1
         elif strand == '-':
-            tss -= 1
+            tss += 1
 
         # Ensure Start < End
         if tss > tes:
@@ -51,7 +50,7 @@ def df_to_gtf(df):
         else:
             # For reverse strand genes
             coords = [tss] + ic_coords[::-1] + [tes]
-            exons = [(coords[i], coords[i + 1]) for i in range(0,len(coords) - 1,2)][::-1]
+            exons = [[coords[i], coords[i + 1]] for i in range(0,len(coords) - 1,2)][::-1]
 
         # Add exon entries
         for i, (start, end) in enumerate(exons):
@@ -112,7 +111,7 @@ def make_ic(gtf_files):
             fwd, rev = cerberus.get_stranded_gtf_dfs(gtf_df.df)
             tss_df = pd.DataFrame()
             tes_df = pd.DataFrame()
-            for strand, strand_df in zip(['+', '-'], [fwd,rev]):                print()
+            for strand, strand_df in zip(['+', '-'], [fwd,rev]):
                 strand_df['max_coord'] = strand_df[['Start', 'End']].max(axis=1)
                 strand_df['min_coord'] = strand_df[['Start', 'End']].min(axis=1)
                 strand_df = strand_df[['transcript_id',
@@ -162,7 +161,6 @@ def make_ic(gtf_files):
 
         # keep the longest for each
         fwd, rev = cerberus.get_stranded_gtf_dfs(ic_df)
-        import pdb;pdb.set_trace()
         fwd = fwd.groupby(gb_cols, observed=True).agg(tss=("tss", "min"),
                                                       tes=("tes", "max")).reset_index()
 
