@@ -28,7 +28,7 @@ params:
       agg_slack: 20
 
 lyric:
-  gff: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/lyric/240910_lyric_complete/{lab_rep}.HiSS.tmerge.min2reads.splicing_status-all.endSupport-all.gff.gz
+  gff: /gpfs/projects/bsc83/Projects/pantranscriptome/novelannotations/lyric/240910_lyric_complete/{lab_rep}_updated.gff.gz
   gtf: /gpfs/projects/bsc83/Projects/pantranscriptome/fairlie/lyric_raw_not_symlink/{lab_rep}.gtf
 
 iq:
