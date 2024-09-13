@@ -103,6 +103,9 @@ def make_ic(gtf_files):
         # agg. sources; groupby and add commas
         source_ic_df = pd.concat([source_ic_df, df[gb_cols+['source']]],
                                  axis=0)
+        # remove dupes
+        source_ic_df.drop_duplicates(inplace=True, keep='first')
+
         source_ic_df = source_ic_df.groupby(gb_cols, observed=True).agg({'source': ','.join}).reset_index()
 
         # if there are no transcripts, have to get tss / tes differently
